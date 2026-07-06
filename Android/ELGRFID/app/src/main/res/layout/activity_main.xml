@@ -204,17 +204,335 @@
                 app:layout_constraintTop_toTopOf="@+id/colorborder" />
 
             <TextView
+                android:id="@+id/lblnozzletemps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="@string/nozzle_temps"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
+                app:layout_constraintTop_toBottomOf="@+id/colorspin" />
+
+            <View
+                android:id="@+id/extminborder"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/border"
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
+                app:layout_constraintTop_toBottomOf="@+id/lblnozzletemps" />
+
+            <EditText
+                android:id="@+id/extmin"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:elevation="1dp"
+                android:gravity="center"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:maxLength="3"
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="@+id/extminborder"
+                app:layout_constraintEnd_toEndOf="@+id/extminborder"
+                app:layout_constraintStart_toStartOf="@+id/extminborder"
+                app:layout_constraintTop_toTopOf="@+id/extminborder" />
+
+            <TextView
+                android:id="@+id/lblnozzlemin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/hint_background"
+                android:includeFontPadding="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/nozzle_min"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toTopOf="@+id/extminborder"
+                app:layout_constraintStart_toStartOf="@+id/extminborder"
+                app:layout_constraintTop_toTopOf="@+id/extminborder" />
+
+            <View
+                android:id="@+id/extmaxborder"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:background="@drawable/border"
+                app:layout_constraintEnd_toEndOf="@+id/colorborder"
+                app:layout_constraintTop_toTopOf="@+id/extminborder" />
+
+            <EditText
+                android:id="@+id/extmax"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:elevation="1dp"
+                android:gravity="center"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:maxLength="3"
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="@+id/extmaxborder"
+                app:layout_constraintEnd_toEndOf="@+id/extmaxborder"
+                app:layout_constraintStart_toStartOf="@+id/extmaxborder"
+                app:layout_constraintTop_toTopOf="@+id/extmaxborder" />
+
+            <TextView
+                android:id="@+id/lblnozzlemax"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/hint_background"
+                android:includeFontPadding="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/nozzle_max"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toTopOf="@+id/extmaxborder"
+                app:layout_constraintStart_toStartOf="@+id/extmaxborder"
+                app:layout_constraintTop_toTopOf="@+id/extmaxborder" />
+
+            <TextView
+                android:id="@+id/lblbedtemps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/bed_temps"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
+                app:layout_constraintTop_toBottomOf="@+id/extminborder" />
+
+            <View
+                android:id="@+id/bedminborder"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/border"
+                app:layout_constraintStart_toStartOf="@+id/extminborder"
+                app:layout_constraintTop_toBottomOf="@+id/lblbedtemps" />
+
+            <EditText
+                android:id="@+id/bedmin"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:elevation="1dp"
+                android:gravity="center"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:maxLength="3"
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="@+id/bedminborder"
+                app:layout_constraintEnd_toEndOf="@+id/bedminborder"
+                app:layout_constraintStart_toStartOf="@+id/bedminborder"
+                app:layout_constraintTop_toTopOf="@+id/bedminborder" />
+
+            <TextView
+                android:id="@+id/lblbedmin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/hint_background"
+                android:includeFontPadding="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/bed_min"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toTopOf="@+id/bedminborder"
+                app:layout_constraintStart_toStartOf="@+id/bedminborder"
+                app:layout_constraintTop_toTopOf="@+id/bedminborder" />
+
+            <View
+                android:id="@+id/bedmaxborder"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:background="@drawable/border"
+                app:layout_constraintEnd_toEndOf="@+id/extmaxborder"
+                app:layout_constraintTop_toTopOf="@+id/bedminborder" />
+
+            <EditText
+                android:id="@+id/bedmax"
+                android:layout_width="130dp"
+                android:layout_height="48dp"
+                android:background="@android:color/transparent"
+                android:elevation="1dp"
+                android:gravity="center"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:maxLength="3"
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="@+id/bedmaxborder"
+                app:layout_constraintEnd_toEndOf="@+id/bedmaxborder"
+                app:layout_constraintStart_toStartOf="@+id/bedmaxborder"
+                app:layout_constraintTop_toTopOf="@+id/bedmaxborder" />
+
+            <TextView
+                android:id="@+id/lblbedmax"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/hint_background"
+                android:includeFontPadding="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/bed_max"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toTopOf="@+id/bedmaxborder"
+                app:layout_constraintStart_toStartOf="@+id/bedmaxborder"
+                app:layout_constraintTop_toTopOf="@+id/bedmaxborder" />
+
+            <LinearLayout
+                android:id="@+id/other_settings_header"
+                android:layout_width="280dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                app:layout_constraintEnd_toEndOf="@+id/colorborder"
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
+                app:layout_constraintTop_toBottomOf="@+id/bedminborder">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/other_settings"
+                    android:textColor="@color/text_main"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/other_settings_toggle_icon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_arrow_down"
+                    app:tint="@color/text_main" />
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/other_settings_content"
+                android:layout_width="280dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/colorborder"
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
+                app:layout_constraintTop_toBottomOf="@+id/other_settings_header">
+
+                <View
+                    android:id="@+id/diameterborder"
+                    android:layout_width="130dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/border"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <EditText
+                    android:id="@+id/diameter"
+                    android:layout_width="130dp"
+                    android:layout_height="48dp"
+                    android:background="@android:color/transparent"
+                    android:elevation="1dp"
+                    android:gravity="center"
+                    android:importantForAutofill="no"
+                    android:inputType="numberDecimal"
+                    android:maxLength="4"
+                    android:textColor="@color/text_main"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/diameterborder"
+                    app:layout_constraintEnd_toEndOf="@+id/diameterborder"
+                    app:layout_constraintStart_toStartOf="@+id/diameterborder"
+                    app:layout_constraintTop_toTopOf="@+id/diameterborder" />
+
+                <TextView
+                    android:id="@+id/lbldiameter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/hint_background"
+                    android:includeFontPadding="false"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:text="@string/diameter"
+                    android:textColor="@color/primary_brand"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toTopOf="@+id/diameterborder"
+                    app:layout_constraintStart_toStartOf="@+id/diameterborder"
+                    app:layout_constraintTop_toTopOf="@+id/diameterborder" />
+
+                <View
+                    android:id="@+id/proddateborder"
+                    android:layout_width="130dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/border"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/diameterborder" />
+
+                <EditText
+                    android:id="@+id/proddate"
+                    android:layout_width="130dp"
+                    android:layout_height="48dp"
+                    android:background="@android:color/transparent"
+                    android:elevation="1dp"
+                    android:gravity="center"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:maxLength="4"
+                    android:textColor="@color/text_main"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/proddateborder"
+                    app:layout_constraintEnd_toEndOf="@+id/proddateborder"
+                    app:layout_constraintStart_toStartOf="@+id/proddateborder"
+                    app:layout_constraintTop_toTopOf="@+id/proddateborder" />
+
+                <TextView
+                    android:id="@+id/lblproddate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/hint_background"
+                    android:includeFontPadding="false"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:text="@string/production_date"
+                    android:textColor="@color/primary_brand"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toTopOf="@+id/proddateborder"
+                    app:layout_constraintStart_toStartOf="@+id/proddateborder"
+                    app:layout_constraintTop_toTopOf="@+id/proddateborder" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <TextView
                 android:id="@+id/tagtype"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:singleLine="true"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="28dp"
                 android:text=""
                 android:textColor="@color/text_main"
                 android:textSize="18sp"
                 app:layout_constraintStart_toEndOf="@+id/lbltagtype"
-                app:layout_constraintTop_toBottomOf="@+id/infotext" />
+                app:layout_constraintTop_toBottomOf="@+id/other_settings_header" />
 
             <TextView
                 android:id="@+id/lbltagtype"
@@ -228,8 +546,8 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/tagtype"
-                app:layout_constraintStart_toStartOf="@+id/infotext"
-                app:layout_constraintTop_toBottomOf="@+id/infotext" />
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
+                app:layout_constraintTop_toBottomOf="@+id/other_settings_header" />
 
             <TextView
                 android:id="@+id/tagid"
@@ -256,7 +574,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/tagid"
-                app:layout_constraintStart_toStartOf="@+id/infotext"
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
                 app:layout_constraintTop_toBottomOf="@+id/lbltagtype" />
 
             <LinearLayout
@@ -296,21 +614,6 @@
                     tools:ignore="ButtonStyle" />
 
             </LinearLayout>
-
-            <TextView
-                android:id="@+id/infotext"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:layout_marginTop="28dp"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="@color/text_alt"
-                android:text=""
-                app:layout_constraintEnd_toEndOf="@+id/colorspin"
-                app:layout_constraintStart_toStartOf="@+id/lblcolor"
-                app:layout_constraintTop_toBottomOf="@+id/colorspin" />
-
 
             <ImageView
                 android:id="@+id/menubutton"

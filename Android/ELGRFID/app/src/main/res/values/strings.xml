@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ELG RFID</string>
+    <string name="app_name">ELG RFID Fork</string>
     <string name="picker">Picker</string>
     <string name="auto_read_on_tag_scan">Auto read on tag scan?</string>
     <string name="type">Type</string>
@@ -18,6 +18,19 @@
     <string name="unknown_or_empty_tag">Unknown or empty TAG</string>
     <string name="size">Size</string>
     <string name="ext_temps">Extruder min:\u00A0\u00A0%d\u2103\nExtruder max:\u00A0\u00A0%d\u2103</string>
+    <string name="nozzle_temps">Nozzle Temperature (\u2103)</string>
+    <string name="bed_temps">Bed Temperature (\u2103)</string>
+    <string name="nozzle_min">Nozzle min</string>
+    <string name="nozzle_max">Nozzle max</string>
+    <string name="bed_min">Bed min</string>
+    <string name="bed_max">Bed max</string>
+    <string name="diameter">Diameter (mm)</string>
+    <string name="production_date">Production date (YYMM)</string>
+    <string name="tag_settings">Tag Settings</string>
+    <string name="other_settings">Other settings</string>
+    <string name="invalid_temp_range">Temperature must be between 0 and 400\u2103</string>
+    <string name="invalid_diameter">Diameter must be between 1.00 and 5.00 mm</string>
+    <string name="invalid_production_date">Production date must be 4 digits (YYMM)</string>
     <string name="hex_color_code">HEX Color Code</string>
     <string name="no_nfc_tag_found">No NFC tag found</string>
     <string name="close">Close</string>

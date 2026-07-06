@@ -166,6 +166,62 @@ public class Utils {
         return data;
     }
 
+    public static int parseTemperature(String value, int defaultValue) {
+        if (value == null || value.trim().isEmpty()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    public static boolean isValidTemperature(int temp) {
+        return temp >= 0 && temp <= 400;
+    }
+
+    public static int diameterToStored(double diameterMm) {
+        return (int) Math.round(diameterMm * 100);
+    }
+
+    public static double storedToDiameter(int stored) {
+        return stored / 100.0;
+    }
+
+    public static boolean isValidDiameter(double diameterMm) {
+        return diameterMm >= 1.0 && diameterMm <= 5.0;
+    }
+
+    public static String decodeProductionDate(byte yearByte, byte monthByte) {
+        int year = yearByte & 0xFF;
+        int month = monthByte & 0xFF;
+        if (year == 0 && month == 0) {
+            return "";
+        }
+        return String.format("%02X%02X", year, month);
+    }
+
+    public static byte[] encodeProductionDate(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return new byte[]{0, 0};
+        }
+        String trimmed = value.trim();
+        if (trimmed.length() != 4) {
+            return null;
+        }
+        try {
+            int year = Integer.parseInt(trimmed.substring(0, 2), 16);
+            int month = Integer.parseInt(trimmed.substring(2, 4), 16);
+            if (year < 0 || year > 0xFF || month < 0 || month > 0xFF) {
+                return null;
+            }
+            return new byte[]{(byte) year, (byte) month};
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     public static byte[] hexToByte(String hexString) {
         byte[] byteArray = new byte[hexString.length() / 2];
         for (int i = 0; i < hexString.length(); i += 2) {

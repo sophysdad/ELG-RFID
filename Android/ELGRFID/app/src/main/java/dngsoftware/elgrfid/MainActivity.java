@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     ArrayAdapter<String> tadapter, wadapter;
     ArrayAdapter<Filament> sadapter;
     String MaterialType = "PLA", MaterialWeight = "1 KG", MaterialColor = "0000FF";
-    int intType = 0, intSubtype, extMin, extMax;
+    int intType = 0, intSubtype, extMin = 190, extMax = 230, bedMin = 0, bedMax = 0, filamentDiameter = 175;
     Dialog pickerDialog, tagDialog;
     AlertDialog inputDialog;
     private Handler mainHandler;
@@ -150,7 +150,12 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         main.colorview.setBackgroundColor(Color.rgb(0, 0, 255));
         main.readbutton.setOnClickListener(view -> readTag(currentTag));
 
-        main.writebutton.setOnClickListener(view -> writeTag(currentTag ,MaterialType, intType, intSubtype, MaterialColor,GetMaterialIntWeight(MaterialWeight)));
+        main.writebutton.setOnClickListener(view -> {
+            if (!syncTagSettingsFromUi()) {
+                return;
+            }
+            writeTag(currentTag, MaterialType, intType, intSubtype, MaterialColor, GetMaterialIntWeight(MaterialWeight));
+        });
 
         main.menubutton.setOnClickListener(view -> drawerLayout.openDrawer(GravityCompat.START));
 
@@ -198,6 +203,23 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             }
         });
 
+        main.diameter.setText("1.75");
+        setupOtherSettingsSection();
+        loadSubtypes(MaterialType);
+    }
+
+    private void setupOtherSettingsSection() {
+        main.otherSettingsContent.setVisibility(View.GONE);
+        main.otherSettingsToggleIcon.setImageResource(R.drawable.ic_arrow_down);
+        main.otherSettingsHeader.setOnClickListener(v -> {
+            if (main.otherSettingsContent.getVisibility() == View.VISIBLE) {
+                main.otherSettingsContent.setVisibility(View.GONE);
+                main.otherSettingsToggleIcon.setImageResource(R.drawable.ic_arrow_down);
+            } else {
+                main.otherSettingsContent.setVisibility(View.VISIBLE);
+                main.otherSettingsToggleIcon.setImageResource(R.drawable.ic_arrow_up);
+            }
+        });
     }
 
 
@@ -226,6 +248,54 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     }
 
 
+    private void updateTempFieldsOnUi() {
+        main.extmin.setText(String.valueOf(extMin));
+        main.extmax.setText(String.valueOf(extMax));
+        main.bedmin.setText(bedMin > 0 ? String.valueOf(bedMin) : "");
+        main.bedmax.setText(bedMax > 0 ? String.valueOf(bedMax) : "");
+    }
+
+    private boolean syncTagSettingsFromUi() {
+        extMin = parseTemperature(main.extmin.getText().toString(), extMin);
+        extMax = parseTemperature(main.extmax.getText().toString(), extMax);
+        bedMin = parseTemperature(main.bedmin.getText().toString(), 0);
+        bedMax = parseTemperature(main.bedmax.getText().toString(), 0);
+
+        if (!isValidTemperature(extMin) || !isValidTemperature(extMax)
+                || !isValidTemperature(bedMin) || !isValidTemperature(bedMax)) {
+            showToast(R.string.invalid_temp_range, Toast.LENGTH_SHORT);
+            return false;
+        }
+        if (extMax < extMin) {
+            showToast(R.string.invalid_temp_range, Toast.LENGTH_SHORT);
+            return false;
+        }
+        if (bedMax > 0 && bedMin > 0 && bedMax < bedMin) {
+            showToast(R.string.invalid_temp_range, Toast.LENGTH_SHORT);
+            return false;
+        }
+
+        try {
+            double diameterMm = Double.parseDouble(main.diameter.getText().toString().trim());
+            if (!isValidDiameter(diameterMm)) {
+                showToast(R.string.invalid_diameter, Toast.LENGTH_SHORT);
+                return false;
+            }
+            filamentDiameter = diameterToStored(diameterMm);
+        } catch (NumberFormatException e) {
+            showToast(R.string.invalid_diameter, Toast.LENGTH_SHORT);
+            return false;
+        }
+
+        String productionDate = main.proddate.getText().toString().trim();
+        if (!productionDate.isEmpty() && encodeProductionDate(productionDate) == null) {
+            showToast(R.string.invalid_production_date, Toast.LENGTH_SHORT);
+            return false;
+        }
+
+        return true;
+    }
+
     private void loadSubtypes(String materialType)
     {
         List<Filament> subTypes = getFilamentSubTypes(materialType);
@@ -240,7 +310,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     extMin = selected.minTemp;
                     extMax = selected.maxTemp;
                     intSubtype = selected.id;
-                    main.infotext.setText(String.format(Locale.getDefault(), getString(R.string.ext_temps), extMin, extMax));
+                    updateTempFieldsOnUi();
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> parentView) {
@@ -356,8 +426,15 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                             main.txtcolor.setText(MaterialColor);
                             main.txtcolor.setTextColor(getContrastColor(Color.parseColor("#" + MaterialColor)));
                             main.spoolsize.setSelection(wadapter.getPosition(GetMaterialWeight(ByteBuffer.wrap(subArray(buff.array(), 78, 2)).getShort())));
-                            main.infotext.setText(String.format(Locale.getDefault(), getString(R.string.ext_temps),
-                                    ByteBuffer.wrap(subArray(buff.array(), 68, 2)).getShort(), ByteBuffer.wrap(subArray(buff.array(), 70, 2)).getShort()));
+                            extMin = ByteBuffer.wrap(subArray(buff.array(), 68, 2)).getShort();
+                            extMax = ByteBuffer.wrap(subArray(buff.array(), 70, 2)).getShort();
+                            bedMin = ByteBuffer.wrap(subArray(buff.array(), 72, 2)).getShort();
+                            bedMax = ByteBuffer.wrap(subArray(buff.array(), 74, 2)).getShort();
+                            filamentDiameter = ByteBuffer.wrap(subArray(buff.array(), 76, 2)).getShort();
+                            String productionDate = decodeProductionDate(buff.array()[80], buff.array()[81]);
+                            updateTempFieldsOnUi();
+                            main.diameter.setText(String.format(Locale.US, "%.2f", storedToDiameter(filamentDiameter)));
+                            main.proddate.setText(productionDate);
                             List<Filament> subTypes = getFilamentSubTypes(MaterialType);
                             int pos = getPositionById(subTypes, buff.array()[61]);
                             mainHandler.postDelayed(() -> {
@@ -405,14 +482,18 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     writeTagPage(nfcA, 19, new byte[]{(byte) type, (byte) subType, 0, 0});
                     // color
                     writeTagPage(nfcA, 20, hexToByte(colorHex + "FF"));
-                    // ext min  / ext max
+                    // nozzle min / max
                     writeTagPage(nfcA, 21, doubleBE(extMin, extMax));
-                    //  bed temp range?
-                    writeTagPage(nfcA, 22, empty);
-                    //diameter / weight
-                    writeTagPage(nfcA, 23, doubleBE(175, weightGrams));
-                    // prod date?
-                    writeTagPage(nfcA, 24, new byte[]{0, (byte) 0x36, (byte) 0xC8, 0});
+                    // bed min / max
+                    writeTagPage(nfcA, 22, doubleBE(bedMin, bedMax));
+                    // diameter / weight
+                    writeTagPage(nfcA, 23, doubleBE(filamentDiameter, weightGrams));
+                    // production date (YYMM)
+                    byte[] productionDate = encodeProductionDate(main.proddate.getText().toString());
+                    if (productionDate == null) {
+                        productionDate = new byte[]{0, 0};
+                    }
+                    writeTagPage(nfcA, 24, new byte[]{0, productionDate[0], productionDate[1], 0});
                     playBeep();
                     showToast(R.string.data_written_to_tag, Toast.LENGTH_SHORT);
                 } catch (Exception e) {
