@@ -177,8 +177,69 @@ public class Utils {
         }
     }
 
+    public static final int TEMP_MIN = 0;
+    public static final int TEMP_MAX = 400;
+    public static final int TEMP_STEP = 5;
+    public static final int TEMP_PICKER_COUNT = (TEMP_MAX - TEMP_MIN) / TEMP_STEP + 1;
+
     public static boolean isValidTemperature(int temp) {
-        return temp >= 0 && temp <= 400;
+        return temp >= TEMP_MIN && temp <= TEMP_MAX;
+    }
+
+    public static int roundTempToStep(int temp) {
+        int clamped = Math.max(TEMP_MIN, Math.min(TEMP_MAX, temp));
+        return Math.round((float) clamped / TEMP_STEP) * TEMP_STEP;
+    }
+
+    public static int tempToPickerIndex(int temp) {
+        return roundTempToStep(temp) / TEMP_STEP;
+    }
+
+    public static int pickerIndexToTemp(int index) {
+        int clamped = Math.max(0, Math.min(TEMP_PICKER_COUNT - 1, index));
+        return clamped * TEMP_STEP;
+    }
+
+    public static int getDefaultBedMin(String materialType) {
+        switch (materialType) {
+            case "PLA": return 50;
+            case "PETG": return 70;
+            case "ABS":
+            case "ASA": return 90;
+            case "TPU": return 35;
+            case "PA":
+            case "PPA":
+            case "PPS": return 80;
+            case "PC": return 90;
+            case "PVA":
+            case "BVOH": return 50;
+            case "CPE": return 70;
+            case "HIPS": return 90;
+            case "PP": return 60;
+            case "EVA": return 40;
+            default: return 50;
+        }
+    }
+
+    public static int getDefaultBedMax(String materialType) {
+        switch (materialType) {
+            case "PLA": return 60;
+            case "PETG": return 85;
+            case "ABS":
+            case "ASA": return 110;
+            case "TPU": return 50;
+            case "PA":
+            case "PPA": return 100;
+            case "PPS": return 120;
+            case "PC": return 110;
+            case "PVA":
+            case "BVOH": return 60;
+            case "CPE": return 80;
+            case "HIPS": return 100;
+            case "PP": return 80;
+            case "EVA": return 50;
+            default: return 60;
+        }
     }
 
     public static int diameterToStored(double diameterMm) {

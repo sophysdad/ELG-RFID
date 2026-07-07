@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/temp_picker_item_text"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/temp_picker_item_height"
+    android:gravity="center"
+    android:textColor="@color/text_alt"
+    android:textSize="@dimen/temp_picker_text_size" />

@@ -2,4 +2,7 @@
 <resources>
     <dimen name="preset_circle_size">48dp</dimen>
     <dimen name="preset_circle_margin">8dp</dimen>
+    <dimen name="temp_picker_height">200dp</dimen>
+    <dimen name="temp_picker_item_height">26dp</dimen>
+    <dimen name="temp_picker_text_size">15sp</dimen>
 </resources>

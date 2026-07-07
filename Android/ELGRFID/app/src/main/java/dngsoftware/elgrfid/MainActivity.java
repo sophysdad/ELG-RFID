@@ -46,6 +46,7 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -58,6 +59,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.flexbox.FlexboxLayout;
 import com.google.android.material.navigation.NavigationView;
@@ -205,7 +207,137 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
         main.diameter.setText("1.75");
         setupOtherSettingsSection();
+        setupTempPickers();
         loadSubtypes(MaterialType);
+    }
+
+    private void setupTempPickers() {
+        View.OnClickListener nozzleMinPicker = v -> showTempPicker(
+                getString(R.string.nozzle_min),
+                resolveNozzlePickerDefault(main.extmin.getText().toString(), extMin),
+                value -> {
+                    extMin = value;
+                    main.extmin.setText(String.valueOf(value));
+                });
+        View.OnClickListener nozzleMaxPicker = v -> showTempPicker(
+                getString(R.string.nozzle_max),
+                resolveNozzlePickerDefault(main.extmax.getText().toString(), extMax),
+                value -> {
+                    extMax = value;
+                    main.extmax.setText(String.valueOf(value));
+                });
+        View.OnClickListener bedMinPicker = v -> showTempPicker(
+                getString(R.string.bed_min),
+                resolveBedPickerDefault(main.bedmin.getText().toString(), getDefaultBedMin(MaterialType)),
+                value -> {
+                    bedMin = value;
+                    main.bedmin.setText(String.valueOf(value));
+                });
+        View.OnClickListener bedMaxPicker = v -> showTempPicker(
+                getString(R.string.bed_max),
+                resolveBedPickerDefault(main.bedmax.getText().toString(), getDefaultBedMax(MaterialType)),
+                value -> {
+                    bedMax = value;
+                    main.bedmax.setText(String.valueOf(value));
+                });
+
+        main.extmin.setOnClickListener(nozzleMinPicker);
+        main.extmax.setOnClickListener(nozzleMaxPicker);
+        main.bedmin.setOnClickListener(bedMinPicker);
+        main.bedmax.setOnClickListener(bedMaxPicker);
+        main.extminborder.setClickable(true);
+        main.extmaxborder.setClickable(true);
+        main.bedminborder.setClickable(true);
+        main.bedmaxborder.setClickable(true);
+        main.extminborder.setOnClickListener(nozzleMinPicker);
+        main.extmaxborder.setOnClickListener(nozzleMaxPicker);
+        main.bedminborder.setOnClickListener(bedMinPicker);
+        main.bedmaxborder.setOnClickListener(bedMaxPicker);
+    }
+
+    private int resolveNozzlePickerDefault(String currentValue, int subtypeDefault) {
+        if (currentValue != null && !currentValue.trim().isEmpty()) {
+            return roundTempToStep(parseTemperature(currentValue, subtypeDefault));
+        }
+        return roundTempToStep(subtypeDefault);
+    }
+
+    private int resolveBedPickerDefault(String currentValue, int materialDefault) {
+        if (currentValue != null && !currentValue.trim().isEmpty()) {
+            return roundTempToStep(parseTemperature(currentValue, materialDefault));
+        }
+        return roundTempToStep(materialDefault);
+    }
+
+    private void showTempPicker(String title, int defaultTemp, TempPickerCallback callback) {
+        View dialogView = getLayoutInflater().inflate(R.layout.temp_picker_dialog, null);
+        TextView titleView = dialogView.findViewById(R.id.temp_picker_title);
+        RecyclerView pickerList = dialogView.findViewById(R.id.temp_picker_list);
+        View selectionBand = dialogView.findViewById(R.id.temp_picker_selection_band);
+        titleView.setText(title);
+        selectionBand.setOnTouchListener((v, event) -> false);
+
+        int initialIndex = tempToPickerIndex(defaultTemp);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        pickerList.setLayoutManager(layoutManager);
+        tempPickerAdapter adapter = new tempPickerAdapter(this, initialIndex);
+        pickerList.setAdapter(adapter);
+
+        LinearSnapHelper snapHelper = new LinearSnapHelper();
+        snapHelper.attachToRecyclerView(pickerList);
+
+        pickerList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (newState != RecyclerView.SCROLL_STATE_IDLE) {
+                    return;
+                }
+                int position = getSnappedPickerIndex(snapHelper, layoutManager);
+                if (position < 0 || position == adapter.getSelectedPosition()) {
+                    return;
+                }
+                int previous = adapter.getSelectedPosition();
+                adapter.setSelectedPosition(position);
+                adapter.notifyItemChanged(previous);
+                adapter.notifyItemChanged(position);
+            }
+        });
+
+        pickerList.post(() -> {
+            int itemHeight = getResources().getDimensionPixelSize(R.dimen.temp_picker_item_height);
+            int verticalPadding = Math.max(0, (pickerList.getHeight() - itemHeight) / 2);
+            pickerList.setPadding(0, verticalPadding, 0, verticalPadding);
+            layoutManager.scrollToPositionWithOffset(initialIndex, verticalPadding);
+        });
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
+        builder.setView(dialogView);
+        builder.setPositiveButton(R.string.select, (dialog, which) -> {
+            int index = getSnappedPickerIndex(snapHelper, layoutManager);
+            if (index < 0) {
+                index = adapter.getSelectedPosition();
+            }
+            callback.onTempSelected(pickerIndexToTemp(index));
+        });
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(R.color.background_alt);
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+            positiveButton.setTextColor(Color.parseColor("#82B1FF"));
+            negativeButton.setTextColor(Color.parseColor("#82B1FF"));
+        }
+    }
+
+    private static int getSnappedPickerIndex(LinearSnapHelper snapHelper, LinearLayoutManager layoutManager) {
+        View snapView = snapHelper.findSnapView(layoutManager);
+        return snapView != null ? layoutManager.getPosition(snapView) : RecyclerView.NO_POSITION;
+    }
+
+    private interface TempPickerCallback {
+        void onTempSelected(int value);
     }
 
     private void setupOtherSettingsSection() {

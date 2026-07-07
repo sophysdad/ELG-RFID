@@ -10,6 +10,7 @@ This fork adds manual control over temperature ranges and additional tag metadat
 - **Manual bed temperature range** — write bed min/max to tag page 22
 - **Custom filament diameter** — editable under Other settings (default 1.75 mm)
 - **Production date** — optional YYMM hex value under Other settings
+- **Scroll-wheel temperature pickers** — tap nozzle/bed fields to pick temps in 5°C steps (0–400°C)
 - **Installs alongside the original app** — package ID `dngsoftware.elgrfid.fork`, listed as **ELG RFID Fork**
 
 ## Requirements
