@@ -10,6 +10,21 @@
                 android:icon="@drawable/twotone_layers_clear_24"
                 android:title="@string/change_brand" />
             <item
+                android:id="@+id/nav_add_filament"
+                android:icon="@drawable/twotone_add_24"
+                android:title="@string/add_filament"
+                android:visible="false" />
+            <item
+                android:id="@+id/nav_edit_filament"
+                android:icon="@drawable/twotone_edit_24"
+                android:title="@string/edit_filament"
+                android:visible="false" />
+            <item
+                android:id="@+id/nav_delete_filament"
+                android:icon="@drawable/twotone_delete_24"
+                android:title="@string/delete_filament"
+                android:visible="false" />
+            <item
                 android:id="@+id/nav_dark"
                 android:icon="@drawable/twotone_dark_mode_24"
                 android:title="@string/dark_mode"

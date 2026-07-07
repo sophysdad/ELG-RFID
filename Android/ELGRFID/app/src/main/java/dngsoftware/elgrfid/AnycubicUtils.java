@@ -6,6 +6,8 @@ import java.util.List;
 
 public final class AnycubicUtils {
 
+    public static final String PRESET_VENDOR = "AC";
+
     private AnycubicUtils() {
     }
 
@@ -40,19 +42,44 @@ public final class AnycubicUtils {
 
     public static int[] getTemps(FilamentDao db, String materialName) {
         DbFilament item = db.getFilamentByName(materialName);
-        if (item == null || item.filamentParam == null) {
+        if (item == null) {
             return new int[]{200, 210, 50, 60};
         }
-        String[] temps = item.filamentParam.split("\\|");
-        int[] tempArray = new int[temps.length];
-        for (int i = 0; i < temps.length; i++) {
-            try {
-                tempArray[i] = Integer.parseInt(temps[i].trim());
-            } catch (Exception ignored) {
-                return new int[]{200, 210, 50, 60};
+        return FilamentCatalog.getTemps(item);
+    }
+
+    public static boolean isPreset(DbFilament item) {
+        return item != null && PRESET_VENDOR.equalsIgnoreCase(item.filamentVendor);
+    }
+
+    public static boolean needsStructuredParams(FilamentDao db) {
+        for (DbFilament item : db.getAllItems()) {
+            if (item.filamentParam == null || item.filamentParam.split("\\|", -1).length < 6) {
+                return true;
             }
         }
-        return tempArray;
+        return false;
+    }
+
+    public static void resetDatabase(FilamentDao db) {
+        for (DbFilament item : db.getAllItems()) {
+            db.deleteItem(item);
+        }
+        populateDatabase(db);
+    }
+
+    public static String[] parseTypeSubtype(String name) {
+        java.util.List<String> sortedTypes = new java.util.ArrayList<>(java.util.Arrays.asList(FILAMENT_TYPES));
+        sortedTypes.sort((a, b) -> Integer.compare(b.length(), a.length()));
+        for (String type : sortedTypes) {
+            if (name.equals(type)) {
+                return new String[]{type, type};
+            }
+            if (name.startsWith(type + " ")) {
+                return new String[]{type, name.substring(type.length() + 1)};
+            }
+        }
+        return new String[]{name, name};
     }
 
     public static byte[] getSku(FilamentDao db, String materialName) {
@@ -135,34 +162,41 @@ public final class AnycubicUtils {
     }
 
     public static void populateDatabase(FilamentDao db) {
-        addPreset(db, 0, "SHABBK-102", "ABS", "AC", "220|250|90|100");
-        addPreset(db, -1, "", "ASA", "AC", "240|280|90|100");
-        addPreset(db, -1, "", "PC", "AC", "260|300|100|110");
-        addPreset(db, -1, "", "PEBA", "AC", "225|255|45|90");
-        addPreset(db, -1, "", "PETG", "AC", "230|250|70|90");
-        addPreset(db, -1, "", "PETG-CF", "AC", "240|270|65|75");
-        addPreset(db, -1, "AHPLBK-101", "PLA", "AC", "190|230|50|60");
-        addPreset(db, -1, "", "PLA Galaxy", "AC", "190|230|50|60");
-        addPreset(db, -1, "", "PLA Glow", "AC", "190|230|50|60");
-        addPreset(db, -1, "AHHSBK-103", "PLA High Speed", "AC", "190|230|50|60");
-        addPreset(db, -1, "", "PLA Marble", "AC", "200|230|50|60");
-        addPreset(db, -1, "HYGBK-102", "PLA Matte", "AC", "190|230|55|65");
-        addPreset(db, -1, "", "PLA Metal", "AC", "190|230|35|60");
-        addPreset(db, -1, "", "PLA SE", "AC", "190|230|55|65");
-        addPreset(db, -1, "AHSCWH-102", "PLA Silk", "AC", "200|230|55|65");
-        addPreset(db, -1, "AHPLPBK-102", "PLA+", "AC", "205|215|50|60");
-        addPreset(db, -1, "", "PLA-CF", "AC", "210|240|45|65");
-        addPreset(db, -1, "STPBK-101", "TPU", "AC", "210|230|25|60");
+        addPreset(db, 0, "SHABBK-102", "ABS", "220|250|90|100");
+        addPreset(db, -1, "", "ASA", "240|280|90|100");
+        addPreset(db, -1, "", "PC", "260|300|100|110");
+        addPreset(db, -1, "", "PEBA", "225|255|45|90");
+        addPreset(db, -1, "", "PETG", "230|250|70|90");
+        addPreset(db, -1, "", "PETG-CF", "240|270|65|75");
+        addPreset(db, -1, "AHPLBK-101", "PLA", "190|230|50|60");
+        addPreset(db, -1, "", "PLA Galaxy", "190|230|50|60");
+        addPreset(db, -1, "", "PLA Glow", "190|230|50|60");
+        addPreset(db, -1, "AHHSBK-103", "PLA High Speed", "190|230|50|60");
+        addPreset(db, -1, "", "PLA Marble", "200|230|50|60");
+        addPreset(db, -1, "HYGBK-102", "PLA Matte", "190|230|55|65");
+        addPreset(db, -1, "", "PLA Metal", "190|230|35|60");
+        addPreset(db, -1, "", "PLA SE", "190|230|55|65");
+        addPreset(db, -1, "AHSCWH-102", "PLA Silk", "200|230|55|65");
+        addPreset(db, -1, "AHPLPBK-102", "PLA+", "205|215|50|60");
+        addPreset(db, -1, "", "PLA-CF", "210|240|45|65");
+        addPreset(db, -1, "STPBK-101", "TPU", "210|230|25|60");
     }
 
     private static void addPreset(FilamentDao db, int position, String sku, String name,
-                                  String vendor, String params) {
+                                  String tempCsv) {
+        String[] temps = tempCsv.split("\\|");
+        int extMin = Integer.parseInt(temps[0]);
+        int extMax = Integer.parseInt(temps[1]);
+        int bedMin = Integer.parseInt(temps[2]);
+        int bedMax = Integer.parseInt(temps[3]);
+        String[] typeSubtype = parseTypeSubtype(name);
         DbFilament filament = new DbFilament();
         filament.position = position >= 0 ? position : db.getItemCount();
         filament.filamentID = sku;
         filament.filamentName = name;
-        filament.filamentVendor = vendor;
-        filament.filamentParam = params;
+        filament.filamentVendor = PRESET_VENDOR;
+        filament.filamentParam = FilamentCatalog.buildParams(
+                typeSubtype[0], typeSubtype[1], extMin, extMax, bedMin, bedMax);
         db.addItem(filament);
     }
 

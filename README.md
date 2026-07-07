@@ -13,15 +13,21 @@ More brands can be added as their tag formats are integrated.
 
 ## Features
 
+### Shared
+- Vendor → Type → Subtype filament picker with 80+ vendor catalog
+- Vendor overlay with add, edit, and remove for custom profiles
+- Color picker with RGB sliders, gradient picker, presets, and hex entry (3/4/6/8 digits)
+- Scroll-wheel temperature pickers (5°C steps, 0–400°C)
+
 ### Elegoo
 - Manual nozzle and bed temperature ranges
 - Custom filament diameter and production date
-- Scroll-wheel temperature pickers (5°C steps, 0–400°C)
+- ELEGOO preset subtypes from the ELG filament database
 
 ### Anycubic
 - Material presets with extruder/bed temps from DnG's ACE database
-- Add, edit, and delete custom filament profiles
 - ARGB color format and spool length encoding
+- Custom filament profiles per vendor
 
 ### App
 - **SpoolTag** — package ID `dngsoftware.spooltag`
@@ -50,10 +56,10 @@ Get the latest APK from the [Releases](https://github.com/sophysdad/ELG-RFID/rel
 4. Build from the `Android/ELGRFID` directory:
 
    ```bash
-   ./gradlew assembleDebug
+   ./gradlew assembleRelease
    ```
 
-   The APK will be at `app/build/outputs/apk/debug/app-debug.apk`.
+   The release APK will be at `app/build/outputs/apk/release/app-release-unsigned.apk`.
 
 ## Original App
 

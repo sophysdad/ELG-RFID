@@ -31,7 +31,7 @@ import java.util.concurrent.ExecutorService;
 import dngsoftware.elgrfid.databinding.ActivityMainBinding;
 import dngsoftware.elgrfid.databinding.AddDialogBinding;
 
-public class AnycubicController {
+public class AnycubicController implements FilamentPresetController {
 
     private final MainActivity activity;
     private final ActivityMainBinding main;
@@ -39,11 +39,10 @@ public class AnycubicController {
     private final ExecutorService executorService;
 
     private FilamentDao matDb;
-    private ArrayAdapter<String> materialAdapter;
+    private FilamentPickerHelper picker;
     private Dialog addDialog;
     private boolean userSelect;
 
-    String materialName = "PLA";
     String materialColor = "FF0000FF";
 
     public AnycubicController(MainActivity activity, ActivityMainBinding main,
@@ -55,103 +54,86 @@ public class AnycubicController {
     }
 
     public void initialize() {
-        FilamentDatabase db = FilamentDatabase.getInstance(activity);
+        FilamentDatabase db = FilamentDatabase.getInstance(activity, PrinterBrand.ANYCUBIC);
         matDb = db.filamentDao();
-        if (matDb.getItemCount() == 0) {
-            AnycubicUtils.populateDatabase(matDb);
+        if (matDb.getItemCount() == 0 || AnycubicUtils.needsStructuredParams(matDb)) {
+            AnycubicUtils.resetDatabase(matDb);
         }
-        setupMaterialSpinner();
-        main.addbutton.setOnClickListener(v -> openAddDialog(false));
-        main.editbutton.setOnClickListener(v -> openAddDialog(true));
-        main.deletebutton.setOnClickListener(v -> confirmDeleteFilament());
-        loadMaterials(false);
+        picker = new FilamentPickerHelper(activity, main, PrinterBrand.ANYCUBIC, matDb, this,
+                this::applyFilamentSelection);
+        picker.setup();
     }
 
     public void configureUi() {
         int visible = View.VISIBLE;
         int gone = View.GONE;
 
-        main.material.setVisibility(visible);
-        main.materialborder.setVisibility(visible);
-        main.lblmaterial.setVisibility(visible);
-        main.infotext.setVisibility(visible);
-        main.addbutton.setVisibility(visible);
+        main.vendor.setVisibility(visible);
+        main.vendorborder.setVisibility(visible);
+        main.lblvendorMain.setVisibility(visible);
+        main.type.setVisibility(visible);
+        main.typeborder.setVisibility(visible);
+        main.lbltype.setVisibility(visible);
+        main.subtype.setVisibility(visible);
+        main.subtypeborder.setVisibility(visible);
+        main.lblsubtype.setVisibility(visible);
 
-        main.type.setVisibility(gone);
-        main.typeborder.setVisibility(gone);
-        main.lbltype.setVisibility(gone);
-        main.subtype.setVisibility(gone);
-        main.subtypeborder.setVisibility(gone);
-        main.lblsubtype.setVisibility(gone);
-        main.lblnozzletemps.setVisibility(gone);
-        main.extminborder.setVisibility(gone);
-        main.extmin.setVisibility(gone);
-        main.lblnozzlemin.setVisibility(gone);
-        main.extmaxborder.setVisibility(gone);
-        main.extmax.setVisibility(gone);
-        main.lblnozzlemax.setVisibility(gone);
-        main.lblbedtemps.setVisibility(gone);
-        main.bedminborder.setVisibility(gone);
-        main.bedmin.setVisibility(gone);
-        main.lblbedmin.setVisibility(gone);
-        main.bedmaxborder.setVisibility(gone);
-        main.bedmax.setVisibility(gone);
-        main.lblbedmax.setVisibility(gone);
-        main.otherSettingsHeader.setVisibility(gone);
-        main.otherSettingsContent.setVisibility(gone);
+        main.material.setVisibility(gone);
+        main.materialborder.setVisibility(gone);
+        main.lblmaterial.setVisibility(gone);
+        main.infotext.setVisibility(gone);
+
+        main.lblnozzletemps.setVisibility(visible);
+        main.extminborder.setVisibility(visible);
+        main.extmin.setVisibility(visible);
+        main.lblnozzlemin.setVisibility(visible);
+        main.extmaxborder.setVisibility(visible);
+        main.extmax.setVisibility(visible);
+        main.lblnozzlemax.setVisibility(visible);
+        main.lblbedtemps.setVisibility(visible);
+        main.bedminborder.setVisibility(visible);
+        main.bedmin.setVisibility(visible);
+        main.lblbedmin.setVisibility(visible);
+        main.bedmaxborder.setVisibility(visible);
+        main.bedmax.setVisibility(visible);
+        main.lblbedmax.setVisibility(visible);
+        main.otherSettingsHeader.setVisibility(visible);
+        main.spoolsize.setVisibility(visible);
+        main.sizeborder.setVisibility(visible);
+        main.lblsize.setVisibility(visible);
+        main.lbldiameter.setVisibility(visible);
+        main.diameterborder.setVisibility(visible);
+        main.diameter.setVisibility(visible);
+        main.lblproddate.setVisibility(gone);
+        main.proddateborder.setVisibility(gone);
+        main.proddate.setVisibility(gone);
 
         main.txtcolor.setText(materialColor);
         main.colorview.setBackgroundColor(Color.parseColor("#" + materialColor));
         main.txtcolor.setTextColor(Utils.getContrastColor(Color.parseColor("#" + materialColor)));
-    }
-
-    private void setupMaterialSpinner() {
-        materialAdapter = new ArrayAdapter<>(activity, R.layout.spinner_item,
-                AnycubicUtils.getAllMaterials(matDb));
-        main.material.setAdapter(materialAdapter);
-        main.material.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                materialName = materialAdapter.getItem(position);
-                updateInfoText();
-                String vendor = new String(AnycubicUtils.getBrand(matDb, materialName),
-                        StandardCharsets.UTF_8).trim();
-                if ("AC".equalsIgnoreCase(vendor)) {
-                    main.editbutton.setVisibility(View.INVISIBLE);
-                    main.deletebutton.setVisibility(View.INVISIBLE);
-                } else {
-                    main.editbutton.setVisibility(View.VISIBLE);
-                    main.deletebutton.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-    }
-
-    private void updateInfoText() {
-        int[] temps = AnycubicUtils.getTemps(matDb, materialName);
-        main.infotext.setText(String.format(Locale.getDefault(),
-                activity.getString(R.string.info_temps),
-                temps[0], temps[1], temps[2], temps[3]));
-    }
-
-    public void loadMaterials(boolean select) {
-        materialAdapter = new ArrayAdapter<>(activity, R.layout.spinner_item,
-                AnycubicUtils.getAllMaterials(matDb));
-        main.material.setAdapter(materialAdapter);
-        if (select) {
-            int index = materialAdapter.getPosition(materialName);
-            if (index >= 0) {
-                main.material.setSelection(index);
-            }
-        } else {
-            int plaIndex = materialAdapter.getPosition("PLA");
-            main.material.setSelection(plaIndex >= 0 ? plaIndex : 0);
+        if (picker != null) {
+            picker.reloadAll();
         }
-        updateInfoText();
+        if (activity.getFilamentDiameterStored() <= 0) {
+            activity.setFilamentDiameterStored(175);
+        }
+    }
+
+    private void applyFilamentSelection(DbFilament filament) {
+        if (filament == null) {
+            return;
+        }
+        int[] temps = FilamentCatalog.getTemps(filament);
+        activity.setTagTemps(temps[0], temps[1], temps[2], temps[3]);
+    }
+
+    private DbFilament getSelectedFilament() {
+        return picker != null ? picker.getSelectedFilament() : null;
+    }
+
+    private String getMaterialName() {
+        DbFilament selected = getSelectedFilament();
+        return selected != null ? selected.filamentName : "PLA";
     }
 
     public void readTag(Tag tag) {
@@ -177,11 +159,11 @@ public class AnycubicController {
                 }
                 if (buff.array()[0] != 0x00) {
                     mainHandler.post(() -> {
-                        materialName = new String(subArray(buff.array(), 44, 16),
+                        String tagMaterial = new String(subArray(buff.array(), 44, 16),
                                 StandardCharsets.UTF_8).trim();
-                        int index = materialAdapter.getPosition(materialName);
-                        if (index >= 0) {
-                            main.material.setSelection(index);
+                        DbFilament match = matDb.getFilamentByName(tagMaterial);
+                        if (match != null) {
+                            picker.selectFilament(match);
                         }
                         String color = AnycubicUtils.parseColorBytes(subArray(buff.array(), 65, 3));
                         String alpha = Utils.bytesToHex(subArray(buff.array(), 64, 1), false);
@@ -197,9 +179,11 @@ public class AnycubicController {
                         int extMax = AnycubicUtils.parseNumber(subArray(buff.array(), 82, 2));
                         int bedMin = AnycubicUtils.parseNumber(subArray(buff.array(), 100, 2));
                         int bedMax = AnycubicUtils.parseNumber(subArray(buff.array(), 102, 2));
-                        main.infotext.setText(String.format(Locale.getDefault(),
-                                activity.getString(R.string.info_temps),
-                                extMin, extMax, bedMin, bedMax));
+                        activity.setTagTemps(extMin, extMax, bedMin, bedMax);
+                        int diameter = AnycubicUtils.parseNumber(subArray(buff.array(), 104, 2));
+                        if (diameter > 0) {
+                            activity.setFilamentDiameterStored(diameter);
+                        }
                         String weight = AnycubicUtils.getMaterialWeightLabel(
                                 AnycubicUtils.parseNumber(subArray(buff.array(), 106, 2)));
                         int weightIndex = activity.getWeightAdapter().getPosition(weight);
@@ -227,7 +211,9 @@ public class AnycubicController {
             activity.showToast(R.string.no_nfc_tag_found, Toast.LENGTH_SHORT);
             return;
         }
+        String materialName = getMaterialName();
         String weight = activity.getMaterialWeight();
+        int diameter = activity.getFilamentDiameterStored();
         executorService.execute(() -> {
             NfcA nfcA = NfcA.get(tag);
             if (nfcA == null) {
@@ -262,19 +248,18 @@ public class AnycubicController {
                 writeTagPage(nfcA, 20, combineArrays(hexToByte(alpha),
                         AnycubicUtils.parseColorHex(color)));
 
-                int[] temps = AnycubicUtils.getTemps(matDb, materialName);
                 byte[] extTemp = new byte[4];
-                System.arraycopy(AnycubicUtils.numToBytes(temps[0]), 0, extTemp, 0, 2);
-                System.arraycopy(AnycubicUtils.numToBytes(temps[1]), 0, extTemp, 2, 2);
+                System.arraycopy(AnycubicUtils.numToBytes(activity.getExtMin()), 0, extTemp, 0, 2);
+                System.arraycopy(AnycubicUtils.numToBytes(activity.getExtMax()), 0, extTemp, 2, 2);
                 writeTagPage(nfcA, 24, extTemp);
 
                 byte[] bedTemp = new byte[4];
-                System.arraycopy(AnycubicUtils.numToBytes(temps[2]), 0, bedTemp, 0, 2);
-                System.arraycopy(AnycubicUtils.numToBytes(temps[3]), 0, bedTemp, 2, 2);
+                System.arraycopy(AnycubicUtils.numToBytes(activity.getBedMin()), 0, bedTemp, 0, 2);
+                System.arraycopy(AnycubicUtils.numToBytes(activity.getBedMax()), 0, bedTemp, 2, 2);
                 writeTagPage(nfcA, 29, bedTemp);
 
                 byte[] filData = new byte[4];
-                System.arraycopy(AnycubicUtils.numToBytes(175), 0, filData, 0, 2);
+                System.arraycopy(AnycubicUtils.numToBytes(diameter), 0, filData, 0, 2);
                 System.arraycopy(AnycubicUtils.numToBytes(
                         AnycubicUtils.getMaterialLength(weight)), 0, filData, 2, 2);
                 writeTagPage(nfcA, 30, filData);
@@ -305,27 +290,38 @@ public class AnycubicController {
         return true;
     }
 
-    private void confirmDeleteFilament() {
+    @Override
+    public void confirmDeleteFilament() {
+        DbFilament item = getSelectedFilament();
+        if (AnycubicUtils.isPreset(item)) {
+            activity.showToast(R.string.cannot_delete_preset, Toast.LENGTH_SHORT);
+            return;
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         SpannableString titleText = new SpannableString(activity.getString(R.string.delete_filament));
         titleText.setSpan(new ForegroundColorSpan(
                         ContextCompat.getColor(activity, R.color.primary_brand)),
                 0, titleText.length(), 0);
         builder.setTitle(titleText);
-        builder.setMessage(materialName);
+        builder.setMessage(item != null ? item.filamentName : "");
         builder.setPositiveButton(R.string.delete, (dialog, which) -> {
-            DbFilament item = matDb.getFilamentByName(materialName);
             if (item != null) {
                 matDb.deleteItem(item);
-                loadMaterials(false);
+                picker.reloadAll();
             }
         });
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.dismiss());
-        AlertDialog alert = builder.create();
-        alert.show();
+        builder.create().show();
     }
 
-    private void openAddDialog(boolean edit) {
+    @Override
+    public void openAddDialog(boolean edit) {
+        DbFilament current = getSelectedFilament();
+        if (edit && AnycubicUtils.isPreset(current)) {
+            activity.showToast(R.string.cannot_edit_preset, Toast.LENGTH_SHORT);
+            return;
+        }
+
         addDialog = new Dialog(activity, R.style.Theme_ElgRFID);
         addDialog.setCanceledOnTouchOutside(false);
         AddDialogBinding dl = AddDialogBinding.inflate(activity.getLayoutInflater());
@@ -380,14 +376,29 @@ public class AnycubicController {
             return false;
         });
 
-        if (edit) {
-            int[] temps = AnycubicUtils.getTemps(matDb, materialName);
+        if (edit && current != null) {
+            int[] temps = FilamentCatalog.getTemps(current);
             dl.txtextmin.setText(String.valueOf(temps[0]));
             dl.txtextmax.setText(String.valueOf(temps[1]));
             dl.txtbedmin.setText(String.valueOf(temps[2]));
             dl.txtbedmax.setText(String.valueOf(temps[3]));
+            dl.txtserial.setText(FilamentCatalog.getSubtypeKey(current));
+            String vendor = FilamentCatalog.displayVendor(current.filamentVendor, PrinterBrand.ANYCUBIC);
+            int vendorIndex = vendorAdapter.getPosition(vendor);
+            if (vendorIndex >= 0) {
+                dl.vendor.setSelection(vendorIndex);
+            }
+            int typeIndex = typeAdapter.getPosition(FilamentCatalog.getType(current));
+            if (typeIndex >= 0) {
+                dl.type.setSelection(typeIndex);
+            }
         } else {
-            dl.vendor.setSelection(0);
+            String activeVendor = picker.getSelectedVendor();
+            int vendorIndex = vendorAdapter.getPosition(activeVendor);
+            if (vendorIndex < 0) {
+                vendorIndex = vendorAdapter.getPosition("Anycubic");
+            }
+            dl.vendor.setSelection(vendorIndex);
             dl.type.setSelection(6);
             int[] temps = AnycubicUtils.getDefaultTemps("PLA");
             dl.txtextmin.setText(String.valueOf(temps[0]));
@@ -405,42 +416,43 @@ public class AnycubicController {
                 activity.showToast(R.string.fill_all_fields, Toast.LENGTH_SHORT);
                 return;
             }
-            String vendor = dl.vendor.getSelectedItem().toString();
+            String selectedVendor = dl.vendor.getSelectedItem().toString();
             if (dl.chkvendor.isChecked()) {
-                vendor = Objects.requireNonNull(dl.txtvendor.getText()).toString().trim();
+                selectedVendor = Objects.requireNonNull(dl.txtvendor.getText()).toString().trim();
             }
             String type = dl.type.getSelectedItem().toString();
-            String serial = dl.txtserial.getText().toString().trim();
-            String params = String.format("%s|%s|%s|%s",
-                    dl.txtextmin.getText(), dl.txtextmax.getText(),
-                    dl.txtbedmin.getText(), dl.txtbedmax.getText());
-            String newName = String.format("%s %s %s", vendor.trim(), type, serial);
+            String subtype = dl.txtserial.getText().toString().trim();
+            int extMin = Integer.parseInt(dl.txtextmin.getText().toString());
+            int extMax = Integer.parseInt(dl.txtextmax.getText().toString());
+            int bedMin = Integer.parseInt(dl.txtbedmin.getText().toString());
+            int bedMax = Integer.parseInt(dl.txtbedmax.getText().toString());
+            String tagName = "Anycubic".equalsIgnoreCase(selectedVendor)
+                    ? (subtype.equals(type) ? type : type + " " + subtype)
+                    : String.format(Locale.US, "%s %s %s", selectedVendor.trim(), type, subtype);
+            String vendorCode = "Anycubic".equalsIgnoreCase(selectedVendor)
+                    ? AnycubicUtils.PRESET_VENDOR : selectedVendor.trim();
+            String params = FilamentCatalog.buildParams(type, subtype, extMin, extMax, bedMin, bedMax);
 
-            if (edit) {
-                DbFilament current = matDb.getFilamentByName(materialName);
-                if (current != null) {
-                    int position = current.position;
-                    matDb.deleteItem(current);
-                    DbFilament updated = new DbFilament();
-                    updated.position = position;
-                    updated.filamentID = "";
-                    updated.filamentName = newName;
-                    updated.filamentVendor = "";
-                    updated.filamentParam = params;
-                    matDb.addItem(updated);
-                    materialName = newName;
-                    loadMaterials(true);
-                }
+            if (edit && current != null) {
+                int position = current.position;
+                matDb.deleteItem(current);
+                DbFilament updated = new DbFilament();
+                updated.position = position;
+                updated.filamentID = current.filamentID;
+                updated.filamentName = tagName;
+                updated.filamentVendor = vendorCode;
+                updated.filamentParam = params;
+                matDb.addItem(updated);
+                picker.selectFilament(updated);
             } else {
                 DbFilament filament = new DbFilament();
                 filament.position = matDb.getItemCount();
                 filament.filamentID = "";
-                filament.filamentName = newName;
-                filament.filamentVendor = "";
+                filament.filamentName = tagName;
+                filament.filamentVendor = vendorCode;
                 filament.filamentParam = params;
                 matDb.addItem(filament);
-                materialName = newName;
-                loadMaterials(true);
+                picker.selectFilament(filament);
             }
             addDialog.dismiss();
         });

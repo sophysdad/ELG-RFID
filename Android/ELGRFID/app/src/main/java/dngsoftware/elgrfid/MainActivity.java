@@ -74,10 +74,10 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity implements NfcAdapter.ReaderCallback, NavigationView.OnNavigationItemSelectedListener {
     private NfcAdapter nfcAdapter;
     Tag currentTag = null;
-    ArrayAdapter<String> tadapter, wadapter;
-    ArrayAdapter<Filament> sadapter;
+    ArrayAdapter<String> wadapter;
     String MaterialType = "PLA", MaterialWeight = "1 KG", MaterialColor = "0000FF";
-    int intType = 0, intSubtype, extMin = 190, extMax = 230, bedMin = 0, bedMax = 0, filamentDiameter = 175;
+    int intType = 0, intSubtype;
+    int extMin = 190, extMax = 230, bedMin = 0, bedMax = 0, filamentDiameter = 175;
     Dialog pickerDialog, tagDialog;
     AlertDialog inputDialog;
     private Handler mainHandler;
@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     RecyclerView recyclerView;
     PrinterBrand activeBrand;
     AnycubicController anycubicController;
+    ElegooController elegooController;
 
 
     @Override
@@ -162,14 +163,14 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         main.readbutton.setOnClickListener(view -> readTag(currentTag));
 
         main.writebutton.setOnClickListener(view -> {
-            if (activeBrand == PrinterBrand.ANYCUBIC) {
-                anycubicController.writeTag(currentTag);
-                return;
-            }
             if (!syncTagSettingsFromUi()) {
                 return;
             }
-            writeTag(currentTag, MaterialType, intType, intSubtype, MaterialColor, GetMaterialIntWeight(MaterialWeight));
+            if (activeBrand == PrinterBrand.ANYCUBIC) {
+                anycubicController.writeTag(currentTag);
+            } else {
+                elegooController.writeTag(currentTag);
+            }
         });
 
         main.menubutton.setOnClickListener(view -> drawerLayout.openDrawer(GravityCompat.START));
@@ -204,79 +205,106 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         });
 
 
-        tadapter = new ArrayAdapter<>(this, R.layout.spinner_item, filamentTypes);
-        main.type.setAdapter(tadapter);
-        main.type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                MaterialType = tadapter.getItem(position);
-                intType = position;
-                loadSubtypes(MaterialType);
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> parentView) {
-            }
-        });
-
         main.diameter.setText("1.75");
         setupOtherSettingsSection();
         setupTempPickers();
-        loadSubtypes(MaterialType);
 
         anycubicController = new AnycubicController(this, main, mainHandler, executorService);
+        elegooController = new ElegooController(this, main, mainHandler, executorService);
         configureBrandUi();
     }
 
     private void configureBrandUi() {
         main.brandChip.setText(getString(R.string.active_brand, getString(activeBrand.nameRes)));
+        setFilamentMenuVisible(false);
         if (activeBrand == PrinterBrand.ANYCUBIC) {
             MaterialColor = anycubicController.materialColor;
             anycubicController.initialize();
             anycubicController.configureUi();
         } else {
-            configureElegooUi();
+            elegooController.initialize();
+            elegooController.configureUi();
         }
     }
 
-    private void configureElegooUi() {
-        int visible = View.VISIBLE;
-        int gone = View.GONE;
+    private FilamentPresetController getFilamentController() {
+        return activeBrand == PrinterBrand.ANYCUBIC ? anycubicController : elegooController;
+    }
 
-        main.type.setVisibility(visible);
-        main.typeborder.setVisibility(visible);
-        main.lbltype.setVisibility(visible);
-        main.subtype.setVisibility(visible);
-        main.subtypeborder.setVisibility(visible);
-        main.lblsubtype.setVisibility(visible);
-        main.lblnozzletemps.setVisibility(visible);
-        main.extminborder.setVisibility(visible);
-        main.extmin.setVisibility(visible);
-        main.lblnozzlemin.setVisibility(visible);
-        main.extmaxborder.setVisibility(visible);
-        main.extmax.setVisibility(visible);
-        main.lblnozzlemax.setVisibility(visible);
-        main.lblbedtemps.setVisibility(visible);
-        main.bedminborder.setVisibility(visible);
-        main.bedmin.setVisibility(visible);
-        main.lblbedmin.setVisibility(visible);
-        main.bedmaxborder.setVisibility(visible);
-        main.bedmax.setVisibility(visible);
-        main.lblbedmax.setVisibility(visible);
-        main.otherSettingsHeader.setVisibility(visible);
+    private void setFilamentMenuVisible(boolean visible) {
+        MenuItem add = navigationView.getMenu().findItem(R.id.nav_add_filament);
+        MenuItem edit = navigationView.getMenu().findItem(R.id.nav_edit_filament);
+        MenuItem delete = navigationView.getMenu().findItem(R.id.nav_delete_filament);
+        if (add != null) {
+            add.setVisible(visible);
+        }
+        if (edit != null) {
+            edit.setVisible(visible);
+        }
+        if (delete != null) {
+            delete.setVisible(visible);
+        }
+    }
 
-        main.material.setVisibility(gone);
-        main.materialborder.setVisibility(gone);
-        main.lblmaterial.setVisibility(gone);
-        main.infotext.setVisibility(gone);
-        main.addbutton.setVisibility(gone);
-        main.editbutton.setVisibility(gone);
-        main.deletebutton.setVisibility(gone);
-
-        MaterialColor = MaterialColor.length() == 8 ? MaterialColor.substring(2) : MaterialColor;
-        main.txtcolor.setText(MaterialColor);
-        main.colorview.setBackgroundColor(Color.parseColor("#" + MaterialColor));
-        main.txtcolor.setTextColor(getContrastColor(Color.parseColor("#" + MaterialColor)));
+    void setTagTemps(int nozzleMin, int nozzleMax, int bedMinTemp, int bedMaxTemp) {
+        extMin = nozzleMin;
+        extMax = nozzleMax;
+        bedMin = bedMinTemp;
+        bedMax = bedMaxTemp;
         updateTempFieldsOnUi();
+    }
+
+    int getExtMin() {
+        return extMin;
+    }
+
+    int getExtMax() {
+        return extMax;
+    }
+
+    int getBedMin() {
+        return bedMin;
+    }
+
+    int getBedMax() {
+        return bedMax;
+    }
+
+    int getFilamentDiameterStored() {
+        return filamentDiameter;
+    }
+
+    void setFilamentDiameterStored(int diameterStored) {
+        filamentDiameter = diameterStored;
+        main.diameter.setText(String.format(Locale.US, "%.2f", storedToDiameter(diameterStored)));
+    }
+
+    void applyElegooMaterial(String type, int subtypeId, int nozzleMin, int nozzleMax,
+                               int bedMinTemp, int bedMaxTemp) {
+        MaterialType = type;
+        intType = ElegooUtils.typeToIndex(type);
+        intSubtype = subtypeId;
+        setTagTemps(nozzleMin, nozzleMax, bedMinTemp, bedMaxTemp);
+    }
+
+    String getMaterialColor() {
+        return MaterialColor;
+    }
+
+    void setMaterialColor(String color) {
+        MaterialColor = color.length() == 8 ? color.substring(2) : color;
+    }
+
+    String getMaterialTypeName() {
+        return MaterialType;
+    }
+
+    int getIntType() {
+        return intType;
+    }
+
+    int getIntSubtype() {
+        return intSubtype;
     }
 
     private void openBrandSelection() {
@@ -295,28 +323,28 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     private void setupTempPickers() {
         View.OnClickListener nozzleMinPicker = v -> showTempPicker(
                 getString(R.string.nozzle_min),
-                resolveNozzlePickerDefault(main.extmin.getText().toString(), extMin),
+                resolvePickerDefault(main.extmin.getText().toString()),
                 value -> {
                     extMin = value;
                     main.extmin.setText(String.valueOf(value));
                 });
         View.OnClickListener nozzleMaxPicker = v -> showTempPicker(
                 getString(R.string.nozzle_max),
-                resolveNozzlePickerDefault(main.extmax.getText().toString(), extMax),
+                resolvePickerDefault(main.extmax.getText().toString()),
                 value -> {
                     extMax = value;
                     main.extmax.setText(String.valueOf(value));
                 });
         View.OnClickListener bedMinPicker = v -> showTempPicker(
                 getString(R.string.bed_min),
-                resolveBedPickerDefault(main.bedmin.getText().toString(), getDefaultBedMin(MaterialType)),
+                resolvePickerDefault(main.bedmin.getText().toString()),
                 value -> {
                     bedMin = value;
                     main.bedmin.setText(String.valueOf(value));
                 });
         View.OnClickListener bedMaxPicker = v -> showTempPicker(
                 getString(R.string.bed_max),
-                resolveBedPickerDefault(main.bedmax.getText().toString(), getDefaultBedMax(MaterialType)),
+                resolvePickerDefault(main.bedmax.getText().toString()),
                 value -> {
                     bedMax = value;
                     main.bedmax.setText(String.valueOf(value));
@@ -336,18 +364,11 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         main.bedmaxborder.setOnClickListener(bedMaxPicker);
     }
 
-    private int resolveNozzlePickerDefault(String currentValue, int subtypeDefault) {
+    private int resolvePickerDefault(String currentValue) {
         if (currentValue != null && !currentValue.trim().isEmpty()) {
-            return roundTempToStep(parseTemperature(currentValue, subtypeDefault));
+            return roundTempToStep(parseTemperature(currentValue, getPickerMidpointTemp()));
         }
-        return roundTempToStep(subtypeDefault);
-    }
-
-    private int resolveBedPickerDefault(String currentValue, int materialDefault) {
-        if (currentValue != null && !currentValue.trim().isEmpty()) {
-            return roundTempToStep(parseTemperature(currentValue, materialDefault));
-        }
-        return roundTempToStep(materialDefault);
+        return getPickerMidpointTemp();
     }
 
     private void showTempPicker(String title, int defaultTemp, TempPickerCallback callback) {
@@ -384,13 +405,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             }
         });
 
-        pickerList.post(() -> {
-            int itemHeight = getResources().getDimensionPixelSize(R.dimen.temp_picker_item_height);
-            int verticalPadding = Math.max(0, (pickerList.getHeight() - itemHeight) / 2);
-            pickerList.setPadding(0, verticalPadding, 0, verticalPadding);
-            layoutManager.scrollToPositionWithOffset(initialIndex, verticalPadding);
-        });
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
         builder.setView(dialogView);
         builder.setPositiveButton(R.string.select, (dialog, which) -> {
@@ -403,6 +417,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
         AlertDialog dialog = builder.create();
         dialog.show();
+        scrollPickerToIndex(pickerList, layoutManager, initialIndex);
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(R.color.background_alt);
             Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
@@ -415,6 +430,24 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     private static int getSnappedPickerIndex(LinearSnapHelper snapHelper, LinearLayoutManager layoutManager) {
         View snapView = snapHelper.findSnapView(layoutManager);
         return snapView != null ? layoutManager.getPosition(snapView) : RecyclerView.NO_POSITION;
+    }
+
+    private void scrollPickerToIndex(RecyclerView pickerList, LinearLayoutManager layoutManager, int index) {
+        pickerList.post(() -> {
+            int itemHeight = getResources().getDimensionPixelSize(R.dimen.temp_picker_item_height);
+            int verticalPadding = Math.max(0, (pickerList.getHeight() - itemHeight) / 2);
+            pickerList.setPadding(0, verticalPadding, 0, verticalPadding);
+            layoutManager.scrollToPositionWithOffset(index, verticalPadding);
+            pickerList.post(() -> {
+                View itemView = layoutManager.findViewByPosition(index);
+                if (itemView != null) {
+                    int dy = itemView.getTop() - verticalPadding;
+                    if (dy != 0) {
+                        pickerList.scrollBy(0, dy);
+                    }
+                }
+            });
+        });
     }
 
     private interface TempPickerCallback {
@@ -509,30 +542,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         return true;
     }
 
-    private void loadSubtypes(String materialType)
-    {
-        List<Filament> subTypes = getFilamentSubTypes(materialType);
-        if (!subTypes.isEmpty()) {
-            sadapter = new ArrayAdapter<>(this, R.layout.spinner_item, subTypes);
-            main.subtype.setAdapter(sadapter);
-            main.subtype.setSelection(0);
-            main.subtype.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                    Filament selected = (Filament) parentView.getItemAtPosition(position);
-                    extMin = selected.minTemp;
-                    extMax = selected.maxTemp;
-                    intSubtype = selected.id;
-                    updateTempFieldsOnUi();
-                }
-                @Override
-                public void onNothingSelected(AdapterView<?> parentView) {
-                }
-            });
-        }
-    }
-
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -572,6 +581,12 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         int id = item.getItemId();
         if (id == R.id.nav_change_brand) {
             openBrandSelection();
+        } else if (id == R.id.nav_add_filament) {
+            getFilamentController().openAddDialog(false);
+        } else if (id == R.id.nav_edit_filament) {
+            getFilamentController().openAddDialog(true);
+        } else if (id == R.id.nav_delete_filament) {
+            getFilamentController().confirmDeleteFilament();
         } else if (id == R.id.nav_format) {
             formatTag(currentTag);
         } else if (id == R.id.nav_memory) {
@@ -596,6 +611,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     main.tagtype.setText(String.format(Locale.getDefault(), "   NTAG%d", tagType));
                     main.lbltagid.setVisibility(View.VISIBLE);
                     main.lbltagtype.setVisibility(View.VISIBLE);
+                    main.tagid.setVisibility(View.VISIBLE);
+                    main.tagtype.setVisibility(View.VISIBLE);
                     if (GetSetting(this, "autoread", false)) {
                         readTag(currentTag);
                     }
@@ -604,8 +621,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     currentTag = null;
                     main.tagid.setText("");
                     main.tagtype.setText("");
-                    main.lbltagid.setVisibility(View.INVISIBLE);
-                    main.lbltagtype.setVisibility(View.INVISIBLE);
+                    main.lbltagid.setVisibility(View.GONE);
+                    main.lbltagtype.setVisibility(View.GONE);
+                    main.tagid.setVisibility(View.GONE);
+                    main.tagtype.setVisibility(View.GONE);
                     showToast(R.string.invalid_tag_type, Toast.LENGTH_SHORT);
                 }
             });
@@ -617,69 +636,12 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     public void readTag(Tag tag) {
         if (activeBrand == PrinterBrand.ANYCUBIC) {
             anycubicController.readTag(tag);
-            return;
-        }
-        try {
-            NfcA nfcA = NfcA.get(tag);
-            if (tag == null) {
-                showToast(R.string.no_nfc_tag_found, Toast.LENGTH_SHORT);
-                return;
-            }
-            executorService.execute(() -> {
-                try {
-                    nfcA.connect();
-                    byte[] data = new byte[96];
-                    ByteBuffer buff = ByteBuffer.wrap(data);
-                    for (int page = 4; page < 28; page += 4) {
-                        byte[] pageData = transceive(nfcA, new byte[]{(byte) 0x30, (byte) page});
-                        if (pageData != null) {
-                            buff.put(pageData);
-                        }
-                    }
-                    if (buff.array()[48] == (byte) 0x36) {
-                        mainHandler.post(() -> {
-                            MaterialType = decodeMaterial(subArray(buff.array(), 56, 4)).trim();
-                            main.type.setSelection(tadapter.getPosition(MaterialType));
-                            MaterialColor = bytesToHex(subArray(buff.array(), 64, 3), false);
-                            main.colorview.setBackgroundColor(Color.parseColor("#" + MaterialColor));
-                            main.txtcolor.setText(MaterialColor);
-                            main.txtcolor.setTextColor(getContrastColor(Color.parseColor("#" + MaterialColor)));
-                            main.spoolsize.setSelection(wadapter.getPosition(GetMaterialWeight(ByteBuffer.wrap(subArray(buff.array(), 78, 2)).getShort())));
-                            extMin = ByteBuffer.wrap(subArray(buff.array(), 68, 2)).getShort();
-                            extMax = ByteBuffer.wrap(subArray(buff.array(), 70, 2)).getShort();
-                            bedMin = ByteBuffer.wrap(subArray(buff.array(), 72, 2)).getShort();
-                            bedMax = ByteBuffer.wrap(subArray(buff.array(), 74, 2)).getShort();
-                            filamentDiameter = ByteBuffer.wrap(subArray(buff.array(), 76, 2)).getShort();
-                            String productionDate = decodeProductionDate(buff.array()[80], buff.array()[81]);
-                            updateTempFieldsOnUi();
-                            main.diameter.setText(String.format(Locale.US, "%.2f", storedToDiameter(filamentDiameter)));
-                            main.proddate.setText(productionDate);
-                            List<Filament> subTypes = getFilamentSubTypes(MaterialType);
-                            int pos = getPositionById(subTypes, buff.array()[61]);
-                            mainHandler.postDelayed(() -> {
-                                main.subtype.setSelection(pos);
-                            }, 500);
-                        });
-                        showToast(R.string.data_read_from_tag, Toast.LENGTH_SHORT);
-                    } else {
-                        showToast(R.string.unknown_or_empty_tag, Toast.LENGTH_SHORT);
-                    }
-                } catch (Exception e) {
-                    showToast(R.string.error_reading_tag, Toast.LENGTH_SHORT);
-                } finally {
-                    try {
-                        nfcA.close();
-                    } catch (Exception ignored) {
-                    }
-                }
-            });
-        }catch (Exception ignored) {
-            showToast(R.string.no_nfc_tag_found, Toast.LENGTH_SHORT);
+        } else {
+            elegooController.readTag(tag);
         }
     }
 
-
-    private void writeTag(Tag tag, String typeName, int type, int subType, String colorHex, int weightGrams) {
+    void writeTag(Tag tag, String typeName, int type, int subType, String colorHex, int weightGrams) {
         try {
             NfcA nfcA = NfcA.get(tag);
             if (tag == null) {
@@ -749,15 +711,13 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             }
 
             dl.btncls.setOnClickListener(v -> {
-                String hex = dl.txtcolor.getText().toString();
-                int expectedLength = argbMode ? 8 : 6;
-                if (hex.length() == expectedLength) {
+                String hex = dl.txtcolor.getText().toString().trim();
+                if (isValidHexInput(hex)) {
                     try {
-                        MaterialColor = hex;
-                        int color = argbMode
-                                ? Color.parseColor("#" + MaterialColor)
-                                : Color.rgb(dl.redSlider.getProgress(), dl.greenSlider.getProgress(),
-                                dl.blueSlider.getProgress());
+                        MaterialColor = argbMode
+                                ? expandHexToArgb(hex)
+                                : expandHexToRgb(hex);
+                        int color = parseHexColor(hex);
                         main.colorview.setBackgroundColor(color);
                         main.txtcolor.setText(MaterialColor);
                         main.txtcolor.setTextColor(getContrastColor(color));
@@ -944,7 +904,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         builder.setTitle(R.string.enter_hex_color_aarrggbb);
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-        input.setHint(R.string.aarrggbb);
+        input.setHint(R.string.hex_input_hint);
         input.setTextColor(Color.BLACK);
         input.setHintTextColor(Color.GRAY);
         input.setTextAlignment(TEXT_ALIGNMENT_CENTER);
@@ -954,18 +914,15 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                 : rgbToHex(dl.redSlider.getProgress(), dl.greenSlider.getProgress(), dl.blueSlider.getProgress()));
         InputFilter[] filters = new InputFilter[3];
         filters[0] = new HexInputFilter();
-        filters[1] = new InputFilter.LengthFilter(argbMode ? 8 : 6);
+        filters[1] = new InputFilter.LengthFilter(8);
         filters[2] = new InputFilter.AllCaps();
         input.setFilters(filters);
         builder.setView(input);
         builder.setCancelable(true);
         builder.setPositiveButton(R.string.submit, (dialog, which) -> {
             String hexInput = input.getText().toString().trim();
-            boolean valid = argbMode
-                    ? isValidHexCode(hexInput)
-                    : hexInput.matches("^[0-9a-fA-F]{6}$");
-            if (valid) {
-                setSlidersFromColor(dl, Color.parseColor("#" + hexInput));
+            if (isValidHexInput(hexInput)) {
+                setSlidersFromColor(dl, parseHexColor(hexInput));
             } else {
                 showToast(R.string.invalid_hex_code_please_use_aarrggbb_format, Toast.LENGTH_LONG);
             }

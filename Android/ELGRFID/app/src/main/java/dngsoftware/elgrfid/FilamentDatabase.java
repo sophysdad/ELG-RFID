@@ -9,31 +9,26 @@ import androidx.room.RoomDatabase;
 @Database(entities = {DbFilament.class}, version = 1, exportSchema = false)
 public abstract class FilamentDatabase extends RoomDatabase {
 
-    private static volatile FilamentDatabase instance;
-
     public abstract FilamentDao filamentDao();
 
-    public static FilamentDatabase getInstance(Context context) {
-        if (instance == null || !instance.isOpen()) {
-            synchronized (FilamentDatabase.class) {
-                if (instance == null || !instance.isOpen()) {
-                    instance = Room.databaseBuilder(
-                                    context.getApplicationContext(),
-                                    FilamentDatabase.class,
-                                    "anycubic_filament_database")
-                            .fallbackToDestructiveMigration()
-                            .allowMainThreadQueries()
-                            .build();
-                }
-            }
-        }
-        return instance;
-    }
+    private static final java.util.Map<String, FilamentDatabase> INSTANCES =
+            new java.util.HashMap<>();
 
-    public static void closeInstance() {
-        if (instance != null && instance.isOpen()) {
-            instance.close();
-            instance = null;
+    public static FilamentDatabase getInstance(Context context, PrinterBrand brand) {
+        String dbName = brand.id + "_filament_database";
+        synchronized (FilamentDatabase.class) {
+            FilamentDatabase db = INSTANCES.get(dbName);
+            if (db == null || !db.isOpen()) {
+                db = Room.databaseBuilder(
+                                context.getApplicationContext(),
+                                FilamentDatabase.class,
+                                dbName)
+                        .fallbackToDestructiveMigration()
+                        .allowMainThreadQueries()
+                        .build();
+                INSTANCES.put(dbName, db);
+            }
+            return db;
         }
     }
 }

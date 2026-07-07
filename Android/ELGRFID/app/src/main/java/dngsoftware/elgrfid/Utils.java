@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -198,6 +199,10 @@ public class Utils {
     public static int pickerIndexToTemp(int index) {
         int clamped = Math.max(0, Math.min(TEMP_PICKER_COUNT - 1, index));
         return clamped * TEMP_STEP;
+    }
+
+    public static int getPickerMidpointTemp() {
+        return roundTempToStep((TEMP_MIN + TEMP_MAX) / 2);
     }
 
     public static int getDefaultBedMin(String materialType) {
@@ -541,10 +546,56 @@ public class Utils {
         }
     }
 
+    public static boolean isValidHexInput(String hexCode) {
+        if (hexCode == null) {
+            return false;
+        }
+        String normalized = hexCode.trim().replace("#", "");
+        if (!normalized.matches("^[0-9a-fA-F]+$")) {
+            return false;
+        }
+        int length = normalized.length();
+        return length == 3 || length == 4 || length == 6 || length == 8;
+    }
+
     public static boolean isValidHexCode(String hexCode) {
-        Pattern pattern = Pattern.compile("^[0-9a-fA-F]{8}$");
-        Matcher matcher = pattern.matcher(hexCode);
-        return matcher.matches();
+        return isValidHexInput(hexCode);
+    }
+
+    public static String expandHexToArgb(String hexCode) {
+        String hex = hexCode.trim().replace("#", "").toUpperCase(Locale.US);
+        if (!isValidHexInput(hex)) {
+            throw new IllegalArgumentException("Invalid hex color: " + hexCode);
+        }
+        switch (hex.length()) {
+            case 3:
+                return "FF" + expandShorthandHex(hex);
+            case 4:
+                return expandShorthandHex(hex);
+            case 6:
+                return "FF" + hex;
+            case 8:
+            default:
+                return hex;
+        }
+    }
+
+    public static String expandHexToRgb(String hexCode) {
+        return expandHexToArgb(hexCode).substring(2);
+    }
+
+    @ColorInt
+    public static int parseHexColor(String hexCode) {
+        return Color.parseColor("#" + expandHexToArgb(hexCode));
+    }
+
+    private static String expandShorthandHex(String hex) {
+        StringBuilder expanded = new StringBuilder(hex.length() * 2);
+        for (int i = 0; i < hex.length(); i++) {
+            char value = hex.charAt(i);
+            expanded.append(value).append(value);
+        }
+        return expanded.toString();
     }
 
     public static int[] presetColors() {
