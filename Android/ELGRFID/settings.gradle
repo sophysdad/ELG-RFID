@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ELG RFID"
+rootProject.name = "SpoolTag"
 include ':app'

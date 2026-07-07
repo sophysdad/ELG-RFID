@@ -27,16 +27,112 @@
             android:layout_gravity="center|fill_vertical"
             tools:context=".MainActivity">
 
+            <TextView
+                android:id="@+id/brand_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/hint_background"
+                android:paddingStart="10dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="4dp"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/menubutton" />
+
+            <Spinner
+                android:id="@+id/material"
+                android:layout_width="280dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:spinnerMode="dialog"
+                android:visibility="gone"
+                app:backgroundTint="@color/text_main"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/brand_chip" />
+
+            <View
+                android:id="@+id/materialborder"
+                android:layout_width="280dp"
+                android:layout_height="56dp"
+                android:background="@drawable/border"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/material"
+                app:layout_constraintEnd_toEndOf="@+id/material"
+                app:layout_constraintStart_toStartOf="@+id/material"
+                app:layout_constraintTop_toTopOf="@+id/material" />
+
+            <TextView
+                android:id="@+id/lblmaterial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/hint_background"
+                android:includeFontPadding="false"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/material"
+                android:textColor="@color/primary_brand"
+                android:textSize="12sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@+id/materialborder"
+                app:layout_constraintStart_toStartOf="@+id/materialborder"
+                app:layout_constraintTop_toTopOf="@+id/materialborder" />
+
+            <ImageView
+                android:id="@+id/addbutton"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="-16dp"
+                android:importantForAccessibility="no"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/material"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/twotone_add_24"
+                app:tint="@color/primary_brand" />
+
+            <ImageView
+                android:id="@+id/editbutton"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="44dp"
+                android:importantForAccessibility="no"
+                android:visibility="gone"
+                app:layout_constraintEnd_toStartOf="@+id/addbutton"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/twotone_edit_24"
+                app:tint="@color/primary_brand" />
+
+            <ImageView
+                android:id="@+id/deletebutton"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="44dp"
+                android:importantForAccessibility="no"
+                android:visibility="gone"
+                app:layout_constraintEnd_toStartOf="@+id/editbutton"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/twotone_delete_24"
+                app:tint="@color/primary_brand" />
+
             <Spinner
                 android:id="@+id/type"
                 android:layout_width="280dp"
                 android:layout_height="56dp"
-                android:layout_marginTop="34dp"
+                android:layout_marginTop="12dp"
                 android:spinnerMode="dialog"
                 app:backgroundTint="@color/text_main"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/menubutton" />
+                app:layout_constraintTop_toBottomOf="@+id/brand_chip" />
 
             <View
                 android:id="@+id/typeborder"
@@ -204,6 +300,21 @@
                 app:layout_constraintBottom_toTopOf="@+id/colorborder"
                 app:layout_constraintStart_toStartOf="@+id/colorborder"
                 app:layout_constraintTop_toTopOf="@+id/colorborder" />
+
+            <TextView
+                android:id="@+id/infotext"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:padding="10dp"
+                android:text=""
+                android:textColor="@color/text_main"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/colorspin"
+                app:layout_constraintStart_toStartOf="@+id/lblcolor"
+                app:layout_constraintTop_toBottomOf="@+id/colorspin" />
 
             <TextView
                 android:id="@+id/lblnozzletemps"
@@ -555,7 +666,14 @@
                 android:textColor="@color/text_main"
                 android:textSize="18sp"
                 app:layout_constraintStart_toEndOf="@+id/lbltagtype"
-                app:layout_constraintTop_toBottomOf="@+id/other_settings_content" />
+                app:layout_constraintTop_toBottomOf="@+id/settings_bottom_barrier" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/settings_bottom_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="other_settings_content,infotext,bedmaxborder" />
 
             <TextView
                 android:id="@+id/lbltagtype"
@@ -570,7 +688,7 @@
                 android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/tagtype"
                 app:layout_constraintStart_toStartOf="@+id/lblcolor"
-                app:layout_constraintTop_toBottomOf="@+id/other_settings_content" />
+                app:layout_constraintTop_toBottomOf="@+id/settings_bottom_barrier" />
 
             <TextView
                 android:id="@+id/tagid"

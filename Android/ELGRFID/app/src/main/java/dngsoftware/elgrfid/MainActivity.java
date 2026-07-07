@@ -22,6 +22,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -94,11 +95,19 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     private PickerDialogBinding colorDialog;
     tagAdapter recycleAdapter;
     RecyclerView recyclerView;
+    PrinterBrand activeBrand;
+    AnycubicController anycubicController;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        activeBrand = BrandPreferences.getSelectedBrand(this);
+        if (activeBrand == null) {
+            startActivity(new Intent(this, BrandSelectionActivity.class));
+            finish();
+            return;
+        }
         setThemeMode(GetSetting(this, "enabledm", false));
         Resources res = getApplicationContext().getResources();
         Locale locale = new Locale("en");
@@ -153,6 +162,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         main.readbutton.setOnClickListener(view -> readTag(currentTag));
 
         main.writebutton.setOnClickListener(view -> {
+            if (activeBrand == PrinterBrand.ANYCUBIC) {
+                anycubicController.writeTag(currentTag);
+                return;
+            }
             if (!syncTagSettingsFromUi()) {
                 return;
             }
@@ -209,6 +222,74 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         setupOtherSettingsSection();
         setupTempPickers();
         loadSubtypes(MaterialType);
+
+        anycubicController = new AnycubicController(this, main, mainHandler, executorService);
+        configureBrandUi();
+    }
+
+    private void configureBrandUi() {
+        main.brandChip.setText(getString(R.string.active_brand, getString(activeBrand.nameRes)));
+        if (activeBrand == PrinterBrand.ANYCUBIC) {
+            MaterialColor = anycubicController.materialColor;
+            anycubicController.initialize();
+            anycubicController.configureUi();
+        } else {
+            configureElegooUi();
+        }
+    }
+
+    private void configureElegooUi() {
+        int visible = View.VISIBLE;
+        int gone = View.GONE;
+
+        main.type.setVisibility(visible);
+        main.typeborder.setVisibility(visible);
+        main.lbltype.setVisibility(visible);
+        main.subtype.setVisibility(visible);
+        main.subtypeborder.setVisibility(visible);
+        main.lblsubtype.setVisibility(visible);
+        main.lblnozzletemps.setVisibility(visible);
+        main.extminborder.setVisibility(visible);
+        main.extmin.setVisibility(visible);
+        main.lblnozzlemin.setVisibility(visible);
+        main.extmaxborder.setVisibility(visible);
+        main.extmax.setVisibility(visible);
+        main.lblnozzlemax.setVisibility(visible);
+        main.lblbedtemps.setVisibility(visible);
+        main.bedminborder.setVisibility(visible);
+        main.bedmin.setVisibility(visible);
+        main.lblbedmin.setVisibility(visible);
+        main.bedmaxborder.setVisibility(visible);
+        main.bedmax.setVisibility(visible);
+        main.lblbedmax.setVisibility(visible);
+        main.otherSettingsHeader.setVisibility(visible);
+
+        main.material.setVisibility(gone);
+        main.materialborder.setVisibility(gone);
+        main.lblmaterial.setVisibility(gone);
+        main.infotext.setVisibility(gone);
+        main.addbutton.setVisibility(gone);
+        main.editbutton.setVisibility(gone);
+        main.deletebutton.setVisibility(gone);
+
+        MaterialColor = MaterialColor.length() == 8 ? MaterialColor.substring(2) : MaterialColor;
+        main.txtcolor.setText(MaterialColor);
+        main.colorview.setBackgroundColor(Color.parseColor("#" + MaterialColor));
+        main.txtcolor.setTextColor(getContrastColor(Color.parseColor("#" + MaterialColor)));
+        updateTempFieldsOnUi();
+    }
+
+    private void openBrandSelection() {
+        startActivity(new Intent(this, BrandSelectionActivity.class));
+        finish();
+    }
+
+    ArrayAdapter<String> getWeightAdapter() {
+        return wadapter;
+    }
+
+    String getMaterialWeight() {
+        return MaterialWeight;
     }
 
     private void setupTempPickers() {
@@ -489,7 +570,9 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_format) {
+        if (id == R.id.nav_change_brand) {
+            openBrandSelection();
+        } else if (id == R.id.nav_format) {
             formatTag(currentTag);
         } else if (id == R.id.nav_memory) {
            loadTagMemory();
@@ -532,6 +615,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
 
     public void readTag(Tag tag) {
+        if (activeBrand == PrinterBrand.ANYCUBIC) {
+            anycubicController.readTag(tag);
+            return;
+        }
         try {
             NfcA nfcA = NfcA.get(tag);
             if (tag == null) {
@@ -655,26 +742,43 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             colorDialog = dl;
             pickerDialog.setContentView(rv);
             gradientBitmap = null;
+            boolean argbMode = activeBrand == PrinterBrand.ANYCUBIC;
+            if (argbMode) {
+                dl.alphaSliderTitle.setVisibility(View.VISIBLE);
+                dl.alphaSlider.setVisibility(View.VISIBLE);
+            }
 
             dl.btncls.setOnClickListener(v -> {
-                if (dl.txtcolor.getText().toString().length() == 6) {
+                String hex = dl.txtcolor.getText().toString();
+                int expectedLength = argbMode ? 8 : 6;
+                if (hex.length() == expectedLength) {
                     try {
-                        MaterialColor = dl.txtcolor.getText().toString();
-                        int color = Color.rgb(dl.redSlider.getProgress(), dl.greenSlider.getProgress(), dl.blueSlider.getProgress());
+                        MaterialColor = hex;
+                        int color = argbMode
+                                ? Color.parseColor("#" + MaterialColor)
+                                : Color.rgb(dl.redSlider.getProgress(), dl.greenSlider.getProgress(),
+                                dl.blueSlider.getProgress());
                         main.colorview.setBackgroundColor(color);
-
                         main.txtcolor.setText(MaterialColor);
-                        main.txtcolor.setTextColor(getContrastColor(Color.parseColor("#" + MaterialColor)));
-
+                        main.txtcolor.setTextColor(getContrastColor(color));
+                        if (argbMode) {
+                            anycubicController.applySelectedColor(MaterialColor);
+                        }
                     } catch (Exception ignored) {
                     }
                 }
                 pickerDialog.dismiss();
             });
 
-            dl.redSlider.setProgress(Color.red(Color.parseColor("#" + MaterialColor)));
-            dl.greenSlider.setProgress(Color.green(Color.parseColor("#" + MaterialColor)));
-            dl.blueSlider.setProgress(Color.blue(Color.parseColor("#" + MaterialColor)));
+            int pickerColor = argbMode
+                    ? Color.parseColor("#" + MaterialColor)
+                    : Color.parseColor("#" + (MaterialColor.length() == 6 ? MaterialColor : "0000FF"));
+            dl.redSlider.setProgress(Color.red(pickerColor));
+            dl.greenSlider.setProgress(Color.green(pickerColor));
+            dl.blueSlider.setProgress(Color.blue(pickerColor));
+            if (argbMode) {
+                dl.alphaSlider.setProgress(Color.alpha(pickerColor));
+            }
 
 
             setupPresetColors(dl);
@@ -740,8 +844,11 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             dl.redSlider.setOnSeekBarChangeListener(rgbChangeListener);
             dl.greenSlider.setOnSeekBarChangeListener(rgbChangeListener);
             dl.blueSlider.setOnSeekBarChangeListener(rgbChangeListener);
+            if (argbMode) {
+                dl.alphaSlider.setOnSeekBarChangeListener(rgbChangeListener);
+            }
 
-            dl.txtcolor.setOnClickListener(v -> showHexInputDialog(dl));
+            dl.txtcolor.setOnClickListener(v -> showHexInputDialog(dl, argbMode));
 
             dl.photoImage.setOnClickListener(v -> {
                 Drawable drawable = ContextCompat.getDrawable(dl.photoImage.getContext(), R.drawable.camera);
@@ -770,9 +877,13 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
 
     private void updateColorDisplay(PickerDialogBinding dl,int currentRed,int currentGreen,int currentBlue) {
-        int color = Color.rgb(currentRed, currentGreen, currentBlue);
+        int alpha = dl.alphaSlider.getVisibility() == View.VISIBLE
+                ? dl.alphaSlider.getProgress() : 255;
+        int color = Color.argb(alpha, currentRed, currentGreen, currentBlue);
         dl.colorDisplay.setBackgroundColor(color);
-        String hexCode = rgbToHex(currentRed, currentGreen, currentBlue);
+        String hexCode = dl.alphaSlider.getVisibility() == View.VISIBLE
+                ? AnycubicUtils.rgbToHexA(currentRed, currentGreen, currentBlue, alpha)
+                : rgbToHex(currentRed, currentGreen, currentBlue);
         dl.txtcolor.setText(hexCode);
         double alphaNormalized = 255.0;
         int blendedRed = (int) (currentRed * alphaNormalized + 244 * (1 - alphaNormalized));
@@ -821,11 +932,14 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         dl.redSlider.setProgress(Color.red(argbColor));
         dl.greenSlider.setProgress(Color.green(argbColor));
         dl.blueSlider.setProgress(Color.blue(argbColor));
+        if (dl.alphaSlider.getVisibility() == View.VISIBLE) {
+            dl.alphaSlider.setProgress(Color.alpha(argbColor));
+        }
         updateColorDisplay(dl, Color.red(argbColor), Color.green(argbColor), Color.blue(argbColor));
     }
 
 
-    private void showHexInputDialog(PickerDialogBinding dl) {
+    private void showHexInputDialog(PickerDialogBinding dl, boolean argbMode) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
         builder.setTitle(R.string.enter_hex_color_aarrggbb);
         final EditText input = new EditText(this);
@@ -834,17 +948,23 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         input.setTextColor(Color.BLACK);
         input.setHintTextColor(Color.GRAY);
         input.setTextAlignment(TEXT_ALIGNMENT_CENTER);
-        input.setText(rgbToHex(dl.redSlider.getProgress(), dl.greenSlider.getProgress(), dl.blueSlider.getProgress()));
+        input.setText(argbMode
+                ? AnycubicUtils.rgbToHexA(dl.redSlider.getProgress(), dl.greenSlider.getProgress(),
+                dl.blueSlider.getProgress(), dl.alphaSlider.getProgress())
+                : rgbToHex(dl.redSlider.getProgress(), dl.greenSlider.getProgress(), dl.blueSlider.getProgress()));
         InputFilter[] filters = new InputFilter[3];
         filters[0] = new HexInputFilter();
-        filters[1] = new InputFilter.LengthFilter(8);
+        filters[1] = new InputFilter.LengthFilter(argbMode ? 8 : 6);
         filters[2] = new InputFilter.AllCaps();
         input.setFilters(filters);
         builder.setView(input);
         builder.setCancelable(true);
         builder.setPositiveButton(R.string.submit, (dialog, which) -> {
             String hexInput = input.getText().toString().trim();
-            if (isValidHexCode(hexInput)) {
+            boolean valid = argbMode
+                    ? isValidHexCode(hexInput)
+                    : hexInput.matches("^[0-9a-fA-F]{6}$");
+            if (valid) {
                 setSlidersFromColor(dl, Color.parseColor("#" + hexInput));
             } else {
                 showToast(R.string.invalid_hex_code_please_use_aarrggbb_format, Toast.LENGTH_LONG);
@@ -960,7 +1080,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     }
 
 
-    private void showToast(final Object content, final int duration) {
+    void showToast(final Object content, final int duration) {
         mainHandler.post(() -> {
             if (currentToast != null) currentToast.cancel();
             if (content instanceof Integer) {

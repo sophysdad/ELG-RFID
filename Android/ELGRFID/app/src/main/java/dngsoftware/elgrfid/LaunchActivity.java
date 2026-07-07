@@ -9,7 +9,10 @@ public class LaunchActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent mainIntent = new Intent(this, MainActivity.class);
+        Class<?> target = BrandPreferences.getSelectedBrand(this) == null
+                ? BrandSelectionActivity.class
+                : MainActivity.class;
+        Intent mainIntent = new Intent(this, target);
         mainIntent.setAction(getIntent().getAction());
         mainIntent.setData(getIntent().getData());
         mainIntent.putExtras(getIntent());

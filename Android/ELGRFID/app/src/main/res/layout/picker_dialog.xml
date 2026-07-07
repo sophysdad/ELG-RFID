@@ -128,6 +128,29 @@
                     android:progress="0"
                     android:progressTint="#3B82F6"
                     android:thumbTint="#3B82F6" />
+
+                <TextView
+                    android:id="@+id/alphaSliderTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/alpha"
+                    android:textColor="@color/text_main"
+                    android:textSize="16sp"
+                    android:visibility="gone" />
+
+                <SeekBar
+                    android:id="@+id/alphaSlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:max="255"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:progress="255"
+                    android:progressTint="#9CA3AF"
+                    android:thumbTint="#9CA3AF"
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
 

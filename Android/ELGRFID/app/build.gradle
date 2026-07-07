@@ -10,11 +10,11 @@ android {
 
     defaultConfig {
         resourceConfigurations += ['en']
-        applicationId "dngsoftware.elgrfid.fork"
+        applicationId "dngsoftware.spooltag"
         minSdk 21
         targetSdk 36
-        versionCode 3
-        versionName "1.2"
+        versionCode 4
+        versionName "2.0"
     }
     
     buildTypes {
@@ -40,5 +40,7 @@ dependencies {
     implementation libs.activity.v108
     implementation libs.constraintlayout.v214
     implementation libs.flexbox
+    implementation libs.room.runtime
+    annotationProcessor libs.room.compiler
 
 }

@@ -14,15 +14,20 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ElgRFID">
         <activity
-            android:name=".MainActivity"
+            android:name=".BrandSelectionActivity"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
             android:exported="true"
-            android:launchMode="singleInstance">
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+            android:exported="false"
+            android:launchMode="singleInstance" />
         <activity
             android:name=".LaunchActivity"
             android:exported="true"

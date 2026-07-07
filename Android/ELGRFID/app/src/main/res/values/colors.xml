@@ -10,4 +10,7 @@
     <color name="switch_thumb">#FAFAFA</color>
     <color name="background_main">#F4F4F4</color>
     <color name="background_alt">#FFFFFF</color>
+    <color name="brand_elegoo_accent">#1976D2</color>
+    <color name="brand_anycubic_accent">#00B4D8</color>
+
 </resources>

@@ -1,17 +1,31 @@
-# ELG RFID Fork
+# SpoolTag
 
-A community fork of [DnG-Crafts/ELG-RFID](https://github.com/DnG-Crafts/ELG-RFID) with extended tag editing for the Elegoo Canvas RFID system.
+A universal NFC spool tag programmer based on [DnG-Crafts/ELG-RFID](https://github.com/DnG-Crafts/ELG-RFID) and [DnG-Crafts/ACE-RFID](https://github.com/DnG-Crafts/ACE-RFID).
 
-This fork adds manual control over temperature ranges and additional tag metadata that the Canvas reader supports, so you can program third-party filament spools with custom settings instead of being limited to preset subtype temperatures.
+Choose your printer brand on startup, then read and write NTAG filament tags using the correct format for that printer.
 
-## What's New in This Fork
+## Supported Brands
 
-- **Manual nozzle temperature range** — override preset min/max values per spool
-- **Manual bed temperature range** — write bed min/max to tag page 22
-- **Custom filament diameter** — editable under Other settings (default 1.75 mm)
-- **Production date** — optional YYMM hex value under Other settings
-- **Scroll-wheel temperature pickers** — tap nozzle/bed fields to pick temps in 5°C steps (0–400°C)
-- **Installs alongside the original app** — package ID `dngsoftware.elgrfid.fork`, listed as **ELG RFID Fork**
+- **Elegoo** — Canvas / Centauri tags (ELG format)
+- **Anycubic** — ACE / Kobra tags (ACE format)
+
+More brands can be added as their tag formats are integrated.
+
+## Features
+
+### Elegoo
+- Manual nozzle and bed temperature ranges
+- Custom filament diameter and production date
+- Scroll-wheel temperature pickers (5°C steps, 0–400°C)
+
+### Anycubic
+- Material presets with extruder/bed temps from DnG's ACE database
+- Add, edit, and delete custom filament profiles
+- ARGB color format and spool length encoding
+
+### App
+- **SpoolTag** — package ID `dngsoftware.spooltag`
+- Brand selection screen on launch; change brand anytime from the drawer
 
 ## Requirements
 

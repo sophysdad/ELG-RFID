@@ -6,6 +6,10 @@
     <item android:title="@string/app">
         <menu>
             <item
+                android:id="@+id/nav_change_brand"
+                android:icon="@drawable/twotone_layers_clear_24"
+                android:title="@string/change_brand" />
+            <item
                 android:id="@+id/nav_dark"
                 android:icon="@drawable/twotone_dark_mode_24"
                 android:title="@string/dark_mode"
