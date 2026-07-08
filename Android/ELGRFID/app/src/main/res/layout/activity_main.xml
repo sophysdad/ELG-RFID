@@ -45,6 +45,40 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/menubutton" />
 
+            <LinearLayout
+                android:id="@+id/bambu_actions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/brand_chip">
+
+                <Button
+                    android:id="@+id/bambu_read_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="14dp"
+                    android:text="@string/read"
+                    android:textColor="@color/text_inverted"
+                    android:textSize="16sp"
+                    tools:ignore="ButtonStyle" />
+
+                <Button
+                    android:id="@+id/bambu_clone_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:padding="14dp"
+                    android:text="@string/bambu_clone_tag"
+                    android:textColor="@color/text_inverted"
+                    android:textSize="16sp"
+                    tools:ignore="ButtonStyle" />
+            </LinearLayout>
+
             <View
                 android:id="@+id/form_anchor"
                 android:layout_width="280dp"
@@ -115,7 +149,7 @@
                 app:backgroundTint="@color/text_main"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/form_anchor" />
+                app:layout_constraintTop_toBottomOf="@+id/vendor" />
 
             <View
                 android:id="@+id/materialborder"
@@ -154,7 +188,8 @@
                 app:backgroundTint="@color/text_main"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/vendor" />
+                app:layout_constraintTop_toBottomOf="@+id/material"
+                app:layout_goneMarginTop="12dp" />
 
             <View
                 android:id="@+id/typeborder"
@@ -319,16 +354,19 @@
                 android:id="@+id/infotext"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
                 android:layout_marginTop="20dp"
+                android:layout_marginEnd="24dp"
+                android:lineSpacingExtra="4dp"
                 android:padding="10dp"
                 android:text=""
                 android:textColor="@color/text_main"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:visibility="gone"
-                app:layout_constraintEnd_toEndOf="@+id/colorspin"
-                app:layout_constraintStart_toStartOf="@+id/lblcolor"
-                app:layout_constraintTop_toBottomOf="@+id/colorspin" />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/bambu_actions" />
 
             <TextView
                 android:id="@+id/lblnozzletemps"
@@ -820,6 +858,27 @@
                 app:tint="@color/text_main"
                 app:layout_constraintStart_toStartOf="@+id/form_anchor"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/main_menu_button"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="-8dp"
+                android:drawableStart="@drawable/twotone_layers_clear_24"
+                android:drawablePadding="6dp"
+                android:drawableTint="@color/primary_brand"
+                android:minHeight="40dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="@string/main_menu"
+                android:textAllCaps="false"
+                android:textColor="@color/primary_brand"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="@+id/form_anchor"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ButtonStyle" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

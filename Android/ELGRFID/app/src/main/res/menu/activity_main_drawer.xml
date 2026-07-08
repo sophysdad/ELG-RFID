@@ -6,9 +6,9 @@
     <item android:title="@string/app">
         <menu>
             <item
-                android:id="@+id/nav_change_brand"
-                android:icon="@drawable/twotone_layers_clear_24"
-                android:title="@string/change_brand" />
+                android:id="@+id/nav_tag_guide"
+                android:icon="@drawable/twotone_help_24"
+                android:title="@string/tag_guide_menu" />
             <item
                 android:id="@+id/nav_add_filament"
                 android:icon="@drawable/twotone_add_24"
@@ -38,6 +38,11 @@
                 android:icon="@drawable/twotone_contactless_24"
                 android:title="@string/auto_read"
                 app:actionLayout="@layout/switch_item" />
+            <item
+                android:id="@+id/nav_clone_tag"
+                android:icon="@drawable/twotone_layers_clear_24"
+                android:title="@string/bambu_clone_tag"
+                android:visible="false" />
             <item
                 android:id="@+id/nav_format"
                 android:icon="@drawable/twotone_layers_clear_24"

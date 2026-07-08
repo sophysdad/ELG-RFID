@@ -98,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     PrinterBrand activeBrand;
     AnycubicController anycubicController;
     ElegooController elegooController;
+    NdefFilamentController openSpoolController;
+    NdefFilamentController openTag3DController;
+    CrealityController crealityController;
+    QidiController qidiController;
+    BambuController bambuController;
 
 
     @Override
@@ -162,18 +167,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         main.colorview.setBackgroundColor(Color.rgb(0, 0, 255));
         main.readbutton.setOnClickListener(view -> readTag(currentTag));
 
-        main.writebutton.setOnClickListener(view -> {
-            if (!syncTagSettingsFromUi()) {
-                return;
-            }
-            if (activeBrand == PrinterBrand.ANYCUBIC) {
-                anycubicController.writeTag(currentTag);
-            } else {
-                elegooController.writeTag(currentTag);
-            }
-        });
+        main.writebutton.setOnClickListener(view -> getTagOperations().writeTag(currentTag));
 
         main.menubutton.setOnClickListener(view -> drawerLayout.openDrawer(GravityCompat.START));
+        main.mainMenuButton.setOnClickListener(view -> openBrandSelection());
 
         main.colorspin.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
@@ -211,24 +208,110 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
         anycubicController = new AnycubicController(this, main, mainHandler, executorService);
         elegooController = new ElegooController(this, main, mainHandler, executorService);
+        openSpoolController = new NdefFilamentController(this, main, mainHandler, executorService,
+                PrinterBrand.OPEN_SPOOL, new OpenSpoolCodec());
+        openTag3DController = new NdefFilamentController(this, main, mainHandler, executorService,
+                PrinterBrand.OPEN_TAG3D, new OpenTag3DCodec());
+        crealityController = new CrealityController(this, main, mainHandler, executorService);
+        qidiController = new QidiController(this, main, mainHandler, executorService);
+        bambuController = new BambuController(this, main, mainHandler, executorService);
         configureBrandUi();
     }
 
     private void configureBrandUi() {
-        main.brandChip.setText(getString(R.string.active_brand, getString(activeBrand.nameRes)));
+        int labelRes = activeBrand.openStandard ? R.string.active_format : R.string.active_brand;
+        main.brandChip.setText(getString(labelRes, getString(activeBrand.nameRes)));
+        hideFilamentActionButtons();
         setFilamentMenuVisible(false);
-        if (activeBrand == PrinterBrand.ANYCUBIC) {
-            MaterialColor = anycubicController.materialColor;
-            anycubicController.initialize();
-            anycubicController.configureUi();
-        } else {
-            elegooController.initialize();
-            elegooController.configureUi();
+        setColorPickerVisible(!activeBrand.readOnly);
+        updateBrandDrawerItems();
+        boolean bambuMode = activeBrand == PrinterBrand.BAMBU;
+        main.bambuActions.setVisibility(bambuMode ? View.VISIBLE : View.GONE);
+        main.buttonContainer.setVisibility(bambuMode ? View.GONE : View.VISIBLE);
+        main.writebutton.setVisibility(activeBrand.readOnly ? View.GONE : View.VISIBLE);
+        switch (activeBrand) {
+            case ANYCUBIC:
+                MaterialColor = anycubicController.materialColor;
+                anycubicController.initialize();
+                anycubicController.configureUi();
+                break;
+            case OPEN_SPOOL:
+                openSpoolController.initialize();
+                openSpoolController.configureUi();
+                break;
+            case OPEN_TAG3D:
+                openTag3DController.initialize();
+                openTag3DController.configureUi();
+                break;
+            case CREALITY:
+                crealityController.initialize();
+                crealityController.configureUi();
+                break;
+            case QIDI:
+                qidiController.initialize();
+                qidiController.configureUi();
+                break;
+            case BAMBU:
+                bambuController.initialize();
+                bambuController.configureUi();
+                break;
+            case ELEGOO:
+            default:
+                elegooController.initialize();
+                elegooController.configureUi();
+                break;
         }
     }
 
     private FilamentPresetController getFilamentController() {
-        return activeBrand == PrinterBrand.ANYCUBIC ? anycubicController : elegooController;
+        switch (activeBrand) {
+            case ANYCUBIC:
+                return anycubicController;
+            case OPEN_SPOOL:
+                return openSpoolController;
+            case OPEN_TAG3D:
+                return openTag3DController;
+            case CREALITY:
+                return crealityController;
+            case QIDI:
+                return qidiController;
+            case BAMBU:
+                return bambuController;
+            case ELEGOO:
+            default:
+                return elegooController;
+        }
+    }
+
+    private TagOperations getTagOperations() {
+        switch (activeBrand) {
+            case ANYCUBIC:
+                return anycubicController;
+            case OPEN_SPOOL:
+                return openSpoolController;
+            case OPEN_TAG3D:
+                return openTag3DController;
+            case CREALITY:
+                return crealityController;
+            case QIDI:
+                return qidiController;
+            case BAMBU:
+                return bambuController;
+            case ELEGOO:
+            default:
+                return elegooController;
+        }
+    }
+
+    private void updateBrandDrawerItems() {
+        MenuItem cloneItem = navigationView.getMenu().findItem(R.id.nav_clone_tag);
+        MenuItem formatItem = navigationView.getMenu().findItem(R.id.nav_format);
+        if (cloneItem != null) {
+            cloneItem.setVisible(false);
+        }
+        if (formatItem != null) {
+            formatItem.setVisible(!activeBrand.readOnly);
+        }
     }
 
     private void setFilamentMenuVisible(boolean visible) {
@@ -244,6 +327,21 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         if (delete != null) {
             delete.setVisible(visible);
         }
+    }
+
+    void hideFilamentActionButtons() {
+        main.filamentActions.setVisibility(View.GONE);
+        main.editbutton.setVisibility(View.GONE);
+        main.deletebutton.setVisibility(View.GONE);
+    }
+
+    void setColorPickerVisible(boolean visible) {
+        int state = visible ? View.VISIBLE : View.GONE;
+        main.colorspin.setVisibility(state);
+        main.colorborder.setVisibility(state);
+        main.colorview.setVisibility(state);
+        main.txtcolor.setVisibility(state);
+        main.lblcolor.setVisibility(state);
     }
 
     void setTagTemps(int nozzleMin, int nozzleMax, int bedMinTemp, int bedMaxTemp) {
@@ -287,6 +385,35 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         setTagTemps(nozzleMin, nozzleMax, bedMinTemp, bedMaxTemp);
     }
 
+    void applyOpenMaterial(String type, String modifier, int nozzleMin, int nozzleMax,
+                           int bedMinTemp, int bedMaxTemp) {
+        MaterialType = type == null || type.isEmpty() ? "PLA" : type;
+        intType = 0;
+        intSubtype = 0;
+        setTagTemps(nozzleMin, nozzleMax, bedMinTemp, bedMaxTemp);
+    }
+
+    public interface TextInputCallback {
+        void onText(String value);
+    }
+
+    void promptTextInput(String title, String initialValue, TextInputCallback callback) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
+        builder.setTitle(title);
+        final EditText input = new EditText(this);
+        input.setText(initialValue == null ? "" : initialValue);
+        input.setTextColor(Color.BLACK);
+        builder.setView(input);
+        builder.setPositiveButton(R.string.save, (dialog, which) -> {
+            if (callback != null) {
+                callback.onText(input.getText().toString().trim());
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, (dialog, which) -> dialog.cancel());
+        inputDialog = builder.create();
+        inputDialog.show();
+    }
+
     String getMaterialColor() {
         return MaterialColor;
     }
@@ -308,8 +435,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     }
 
     private void openBrandSelection() {
-        startActivity(new Intent(this, BrandSelectionActivity.class));
-        finish();
+        BrandNavigation.openMainMenu(this);
     }
 
     ArrayAdapter<String> getWeightAdapter() {
@@ -318,6 +444,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
     String getMaterialWeight() {
         return MaterialWeight;
+    }
+
+    Tag getCurrentTag() {
+        return currentTag;
     }
 
     private void setupTempPickers() {
@@ -501,7 +631,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         main.bedmax.setText(bedMax > 0 ? String.valueOf(bedMax) : "");
     }
 
-    private boolean syncTagSettingsFromUi() {
+    boolean syncTagSettingsFromUi() {
         extMin = parseTemperature(main.extmin.getText().toString(), extMin);
         extMax = parseTemperature(main.extmax.getText().toString(), extMax);
         bedMin = parseTemperature(main.bedmin.getText().toString(), 0);
@@ -579,14 +709,16 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.nav_change_brand) {
-            openBrandSelection();
+        if (id == R.id.nav_tag_guide) {
+            startActivity(new Intent(this, TagGuideActivity.class));
         } else if (id == R.id.nav_add_filament) {
             getFilamentController().openAddDialog(false);
         } else if (id == R.id.nav_edit_filament) {
             getFilamentController().openAddDialog(true);
         } else if (id == R.id.nav_delete_filament) {
             getFilamentController().confirmDeleteFilament();
+        } else if (id == R.id.nav_clone_tag) {
+            bambuController.promptClone();
         } else if (id == R.id.nav_format) {
             formatTag(currentTag);
         } else if (id == R.id.nav_memory) {
@@ -602,22 +734,52 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         try {
             runOnUiThread(() -> {
                 byte[] uid = tag.getId();
-                if (uid.length >= 6) {
+                boolean isClassic = MifareClassicTransport.isClassic(tag);
+                if (isClassic) {
+                    if (!activeBrand.mifareClassic) {
+                        PrinterBrand detected = TagFormatDetector.detect(tag);
+                        if (detected != null && detected != activeBrand) {
+                            offerDetectedFormat(detected);
+                        } else {
+                            showToast(R.string.mifare_classic_required, Toast.LENGTH_SHORT);
+                        }
+                        return;
+                    }
                     currentTag = tag;
-                    tagType = getTagType(NfcA.get(currentTag));
+                    tagType = 0;
                     showToast(getString(R.string.tag_found) + bytesToHex(uid, false), Toast.LENGTH_SHORT);
-                    int tagType = getNtagType(NfcA.get(currentTag));
-                    main.tagid.setText(bytesToHex(uid, true));
-                    main.tagtype.setText(String.format(Locale.getDefault(), "   NTAG%d", tagType));
+                    main.tagtype.setText(MifareClassicTransport.describeTag(currentTag));
                     main.lbltagid.setVisibility(View.VISIBLE);
                     main.lbltagtype.setVisibility(View.VISIBLE);
                     main.tagid.setVisibility(View.VISIBLE);
                     main.tagtype.setVisibility(View.VISIBLE);
-                    if (GetSetting(this, "autoread", false)) {
-                        readTag(currentTag);
+                    if (activeBrand == PrinterBrand.CREALITY) {
+                        crealityController.onTagScanned(tag);
+                    } else if (activeBrand == PrinterBrand.BAMBU) {
+                        main.tagid.setText(bytesToHex(uid, true));
+                        bambuController.onTagScanned(tag);
+                        if (bambuController.isClonePending()) {
+                            return;
+                        }
+                    } else {
+                        main.tagid.setText(bytesToHex(uid, true));
                     }
-                }
-                else {
+                } else if (uid.length >= 6) {
+                    if (activeBrand.mifareClassic) {
+                        showToast(R.string.ntag_required, Toast.LENGTH_SHORT);
+                        return;
+                    }
+                    currentTag = tag;
+                    tagType = getTagType(NfcA.get(currentTag));
+                    showToast(getString(R.string.tag_found) + bytesToHex(uid, false), Toast.LENGTH_SHORT);
+                    int ntagType = getNtagType(NfcA.get(currentTag));
+                    main.tagid.setText(bytesToHex(uid, true));
+                    main.tagtype.setText(NdefTransport.describeTag(currentTag));
+                    main.lbltagid.setVisibility(View.VISIBLE);
+                    main.lbltagtype.setVisibility(View.VISIBLE);
+                    main.tagid.setVisibility(View.VISIBLE);
+                    main.tagtype.setVisibility(View.VISIBLE);
+                } else {
                     currentTag = null;
                     main.tagid.setText("");
                     main.tagtype.setText("");
@@ -626,6 +788,13 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
                     main.tagid.setVisibility(View.GONE);
                     main.tagtype.setVisibility(View.GONE);
                     showToast(R.string.invalid_tag_type, Toast.LENGTH_SHORT);
+                    return;
+                }
+                PrinterBrand detected = TagFormatDetector.detect(currentTag);
+                if (detected != null && detected != activeBrand) {
+                    offerDetectedFormat(detected);
+                } else if (GetSetting(this, "autoread", false)) {
+                    readTag(currentTag);
                 }
             });
         } catch (Exception ignored) {
@@ -634,11 +803,31 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
 
     public void readTag(Tag tag) {
-        if (activeBrand == PrinterBrand.ANYCUBIC) {
-            anycubicController.readTag(tag);
-        } else {
-            elegooController.readTag(tag);
+        getTagOperations().readTag(tag);
+    }
+
+    private void offerDetectedFormat(PrinterBrand detected) {
+        if (detected == null || detected == activeBrand) {
+            return;
         }
+        new AlertDialog.Builder(this, R.style.AlertDialogTheme)
+                .setTitle(R.string.switch_tag_format)
+                .setMessage(getString(R.string.switch_tag_format_message,
+                        getString(detected.nameRes), getString(activeBrand.nameRes)))
+                .setPositiveButton(R.string.switch_format, (dialog, which) -> {
+                    BrandPreferences.saveSelectedBrand(this, detected);
+                    activeBrand = detected;
+                    configureBrandUi();
+                    if (currentTag != null) {
+                        readTag(currentTag);
+                    }
+                })
+                .setNegativeButton(R.string.keep_current, (dialog, which) -> {
+                    if (GetSetting(this, "autoread", false) && currentTag != null) {
+                        readTag(currentTag);
+                    }
+                })
+                .show();
     }
 
     void writeTag(Tag tag, String typeName, int type, int subType, String colorHex, int weightGrams) {
@@ -694,6 +883,9 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
     @SuppressLint("ClickableViewAccessibility")
     void openPicker() {
+        if (activeBrand != null && activeBrand.readOnly) {
+            return;
+        }
         try {
             pickerDialog = new Dialog(this, R.style.Theme_ElgRFID);
             pickerDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -704,7 +896,9 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
             colorDialog = dl;
             pickerDialog.setContentView(rv);
             gradientBitmap = null;
-            boolean argbMode = activeBrand == PrinterBrand.ANYCUBIC;
+            boolean argbMode = activeBrand == PrinterBrand.ANYCUBIC
+                    || activeBrand == PrinterBrand.OPEN_SPOOL
+                    || activeBrand == PrinterBrand.OPEN_TAG3D;
             if (argbMode) {
                 dl.alphaSliderTitle.setVisibility(View.VISIBLE);
                 dl.alphaSlider.setVisibility(View.VISIBLE);
@@ -1110,6 +1304,18 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
 
     void loadTagMemory() {
+        if (activeBrand == PrinterBrand.CREALITY) {
+            crealityController.readTagMemory();
+            return;
+        }
+        if (activeBrand == PrinterBrand.QIDI) {
+            qidiController.readTagMemory();
+            return;
+        }
+        if (activeBrand == PrinterBrand.BAMBU) {
+            bambuController.readTagMemory();
+            return;
+        }
         try {
             tagDialog = new Dialog(this, R.style.Theme_ElgRFID);
             tagDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -1133,6 +1339,44 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
         } catch (Exception ignored) {}
     }
 
+
+    void showBambuMemory(byte[] dump) {
+        try {
+            tagDialog = new Dialog(this, R.style.Theme_ElgRFID);
+            tagDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+            tagDialog.setCanceledOnTouchOutside(false);
+            tagDialog.setTitle("Bambu Tag Memory");
+            TagDialogBinding tdl = TagDialogBinding.inflate(getLayoutInflater());
+            tagDialog.setContentView(tdl.getRoot());
+            tdl.btncls.setOnClickListener(v -> tagDialog.dismiss());
+            tdl.btnread.setVisibility(View.GONE);
+            recyclerView = tdl.recyclerView;
+            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+            layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+            recyclerView.setLayoutManager(layoutManager);
+            int blockCount = dump.length / 16;
+            tagItems = new tagItem[blockCount];
+            for (int block = 0; block < blockCount; block++) {
+                byte[] pageData = new byte[16];
+                System.arraycopy(dump, block * 16, pageData, 0, 16);
+                tagItems[block] = new tagItem();
+                tagItems[block].tKey = String.format(Locale.getDefault(), "Block %d", block);
+                tagItems[block].tValue = bytesToHex(pageData, true);
+                if (block == 0) {
+                    tagItems[block].tImage = AppCompatResources.getDrawable(this, R.drawable.locked);
+                } else if (block % 4 == 3) {
+                    tagItems[block].tImage = AppCompatResources.getDrawable(this, R.drawable.internal);
+                } else {
+                    tagItems[block].tImage = AppCompatResources.getDrawable(this, R.drawable.writable);
+                }
+            }
+            tdl.lbldesc.setText("MIFARE Classic 1K");
+            recycleAdapter = new tagAdapter(this, tagItems);
+            recyclerView.setAdapter(recycleAdapter);
+            tagDialog.show();
+        } catch (Exception ignored) {
+        }
+    }
 
     void readTagMemory(TagDialogBinding tdl) {
         if (currentTag == null) {
@@ -1195,6 +1439,18 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Reader
 
 
     private void formatTag(Tag tag) {
+        if (activeBrand == PrinterBrand.CREALITY) {
+            crealityController.formatTag(tag);
+            return;
+        }
+        if (activeBrand == PrinterBrand.QIDI) {
+            qidiController.formatTag(tag);
+            return;
+        }
+        if (activeBrand == PrinterBrand.BAMBU) {
+            bambuController.formatTag(tag);
+            return;
+        }
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         SpannableString titleText = new SpannableString(getString(R.string.format_tag));
         titleText.setSpan(new ForegroundColorSpan(ContextCompat.getColor(this, R.color.primary_brand)), 0, titleText.length(), 0);

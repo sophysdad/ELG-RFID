@@ -28,4 +28,10 @@ public interface FilamentDao {
 
     @Query("SELECT * FROM filament_table WHERE filament_name = :filamentName")
     DbFilament getFilamentByName(String filamentName);
+
+    @Query("SELECT * FROM filament_table WHERE filament_id = :filamentId LIMIT 1")
+    DbFilament getFilamentById(String filamentId);
+
+    @Query("SELECT * FROM filament_table WHERE filament_vendor = :vendor ORDER BY filament_position ASC")
+    List<DbFilament> getFilamentsByVendor(String vendor);
 }

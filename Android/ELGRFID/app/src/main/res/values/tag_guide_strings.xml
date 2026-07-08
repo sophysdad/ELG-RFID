@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tag_guide_title">Tag buying guide</string>
+    <string name="tag_guide_menu">Tag buying guide</string>
+    <string name="tag_guide_button">Which tags do I need?</string>
+    <string name="tag_guide_chip_label">Required chip: %1$s</string>
+    <string name="tag_guide_intro">Each SpoolTag format uses a different NFC chip. Buying the wrong sticker is the most common reason writes fail. Search the exact phrases below on Amazon, AliExpress, or NFC specialty shops.\n\nSticker size: 25 mm round is the usual spool label. NTAG stickers are ISO14443A (Type 2). MIFARE Classic tags are ISO14443A (Type A) but are not NTAG — do not mix them up.\n\nPhone requirement: Your phone must support NFC. Samsung Galaxy S21 and newer (including S23) support MIFARE Classic. Some budget phones only read NTAG.</string>
+
+    <string name="tag_guide_elegoo_chip">NTAG213 or NTAG215 (NXP, ISO14443A Type 2)</string>
+    <string name="tag_guide_elegoo_body">What to buy:\n• \"NTAG213 NFC sticker 25mm\"\n• \"NTAG215 NFC tag blank round\"\n\nMinimum: NTAG213 (504 bytes user memory).\nUID: 7-byte UID is fine.\n\nAvoid: MIFARE Classic, NTAG216-only if you also use other NTAG213 workflows.\n\nWhere to buy:\n• Amazon — search \"NTAG213 sticker\"\n• AliExpress — \"NTAG213 25mm NFC\"\n• GoToTags, NFC Tagify (US), Lab401 (EU)</string>
+
+    <string name="tag_guide_anycubic_chip">NTAG213 / MIFARE Ultralight (ISO14443A Type 2)</string>
+    <string name="tag_guide_anycubic_body">What to buy:\n• \"NTAG213 NFC sticker\" (most common blank)\n• \"MIFARE Ultralight NFC tag 25mm\"\n\nOfficial Anycubic ACE spools use MIFARE Ultralight; blank NTAG213 stickers work for custom writes in SpoolTag.\nUID: 7-byte UID is fine.\n\nAvoid: MIFARE Classic 1K cards.\n\nWhere to buy:\n• Amazon — \"NTAG213 NFC labels\"\n• AliExpress — \"Ultralight NFC sticker\"</string>
+
+    <string name="tag_guide_openspool_chip">NTAG215 or NTAG216 only (NXP Type 2)</string>
+    <string name="tag_guide_openspool_body">What to buy:\n• \"NTAG215 NFC sticker\"\n• \"NTAG216 NFC tag blank\"\n\nRequired: NTAG215 minimum — NTAG213 is too small and SpoolTag will refuse the write.\nMemory: NTAG215 ≈ 504 bytes NDEF; NTAG216 ≈ 888 bytes.\n\nWorks with: Bambu printers running OpenSpool firmware, Snapmaker U1, general inventory.\n\nWhere to buy:\n• Amazon — \"NTAG215 blank NFC\"\n• GoToTags — NTAG215 on-metal or standard stickers\n• AliExpress — \"NTAG216 25mm\"</string>
+
+    <string name="tag_guide_opentag3d_chip">NTAG213, NTAG215, or NTAG216 (NXP Type 2)</string>
+    <string name="tag_guide_opentag3d_body">What to buy:\n• \"NTAG213 NFC sticker\" — basic core data only\n• \"NTAG215 NFC tag\" — recommended for full temp ranges\n• \"NTAG216 NFC tag\" — maximum extended fields\n\nMinimum: NTAG213 for core 112-byte map.\nBest value: NTAG215 for extended temperature fields.\n\nWhere to buy:\n• Amazon / AliExpress — same NTAG sticker listings as OpenSpool\n• Any blank NTAG215/216 from NXP-compatible sellers</string>
+
+    <string name="tag_guide_creality_chip">MIFARE Classic 1K S50 (ISO14443A — not NTAG)</string>
+    <string name="tag_guide_creality_body">What to buy:\n• \"MIFARE Classic 1K S50 NFC card\"\n• \"FM11RF08 blank tag\" (common chip)\n• \"MIFARE 1K writable sticker\" (if available in 25mm)\n\nUID: 4-byte UID strongly recommended. Seven-byte UID tags may not work with Creality encryption.\nSize: 1K (1024 bytes) — not Ultralight, not NTAG.\n\nNote: Newer Creality factory tags use per-tag encryption. Blanks start unencrypted; first write locks sector keys.\n\nWhere to buy:\n• Amazon — \"MIFARE Classic 1K blank\"\n• AliExpress — \"MIFARE 1K S50 writable\"\n• RFID Chentian, Sunorient (AliExpress NFC stores)</string>
+
+    <string name="tag_guide_qidi_chip">MIFARE Classic 1K (FM11RF08S on factory spools)</string>
+    <string name="tag_guide_qidi_body">What to buy:\n• \"MIFARE Classic 1K blank white card\"\n• \"MIFARE 1K NFC tag writable\"\n• Keyfob tags can work if thin enough for your spool hub\n\nData: Only 3 bytes in sector 1 — any blank 1K Classic tag is fine.\nUID: 4-byte or 7-byte usually works for QIDI.\n\nAvoid: NTAG213/215 stickers (wrong chip family).\n\nWhere to buy:\n• Amazon — \"MIFARE Classic 1K\"\n• AliExpress — \"FM11RF08 writable\"</string>
+
+    <string name="tag_guide_bambu_chip">Official tag: factory MIFARE Classic 1K (read-only in SpoolTag)</string>
+    <string name="tag_guide_bambu_body">Reading: Use the RFID sticker already on official Bambu Lab spools. You cannot create new Bambu AMS tags from scratch — they are RSA-signed.\n\nClone blanks only (advanced):\n• \"MIFARE Classic 1K Gen2 magic tag\"\n• \"FUID UID-changeable MIFARE 1K\"\n• \"UID writable MIFARE Classic S50\"\n\nMust be Gen2/FUID magic — Gen1 UID-magic tags can be bricked by AMS firmware.\nUID: 4-byte. Clone copies the source tag UID byte-for-byte.\n\nWhere to buy clone blanks:\n• Amazon — \"MIFARE UID changeable card\"\n• AliExpress — \"FUID MIFARE 1K Gen2\"\n• RFID specialist shops (RFIDtag, TagNFC sellers)</string>
+
+    <string name="tag_guide_cheatsheet_title">Quick chip cheat sheet</string>
+    <string name="tag_guide_cheatsheet_chip">Do not mix these families</string>
+    <string name="tag_guide_cheatsheet_body">NTAG (Type 2): Elegoo, Anycubic, OpenSpool, OpenTag3D\nLook for: NTAG213, NTAG215, NTAG216\n\nMIFARE Classic 1K: Creality, QIDI, Bambu\nLook for: MIFARE Classic 1K, S50, FM11RF08\n\nWrong chip = scan works on nothing or write fails silently.</string>
+</resources>

@@ -29,6 +29,10 @@
             android:exported="false"
             android:launchMode="singleInstance" />
         <activity
+            android:name=".TagGuideActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+            android:exported="false" />
+        <activity
             android:name=".LaunchActivity"
             android:exported="true"
             android:theme="@style/Theme.Transparent"

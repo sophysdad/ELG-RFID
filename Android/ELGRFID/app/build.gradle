@@ -13,8 +13,8 @@ android {
         applicationId "dngsoftware.spooltag"
         minSdk 21
         targetSdk 36
-        versionCode 4
-        versionName "2.0"
+        versionCode 5
+        versionName "2.1"
     }
     
     buildTypes {
@@ -42,5 +42,6 @@ dependencies {
     implementation libs.flexbox
     implementation libs.room.runtime
     annotationProcessor libs.room.compiler
+    implementation libs.bouncycastle
 
 }

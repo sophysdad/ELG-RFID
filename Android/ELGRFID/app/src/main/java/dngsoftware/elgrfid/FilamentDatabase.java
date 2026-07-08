@@ -14,8 +14,8 @@ public abstract class FilamentDatabase extends RoomDatabase {
     private static final java.util.Map<String, FilamentDatabase> INSTANCES =
             new java.util.HashMap<>();
 
-    public static FilamentDatabase getInstance(Context context, PrinterBrand brand) {
-        String dbName = brand.id + "_filament_database";
+    public static FilamentDatabase getInstance(Context context, String brandKey) {
+        String dbName = brandKey + "_filament_database";
         synchronized (FilamentDatabase.class) {
             FilamentDatabase db = INSTANCES.get(dbName);
             if (db == null || !db.isOpen()) {
@@ -30,5 +30,9 @@ public abstract class FilamentDatabase extends RoomDatabase {
             }
             return db;
         }
+    }
+
+    public static FilamentDatabase getInstance(Context context, PrinterBrand brand) {
+        return getInstance(context, brand.id);
     }
 }

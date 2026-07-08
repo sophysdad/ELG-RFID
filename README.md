@@ -2,42 +2,40 @@
 
 A universal NFC spool tag programmer based on [DnG-Crafts/ELG-RFID](https://github.com/DnG-Crafts/ELG-RFID) and [DnG-Crafts/ACE-RFID](https://github.com/DnG-Crafts/ACE-RFID).
 
-Choose your printer brand on startup, then read and write NTAG filament tags using the correct format for that printer.
+Choose your printer brand or open tag format on startup, then read and write NFC filament tags using the correct chip and encoding for that printer.
 
-## Supported Brands
+## Supported Formats
 
-- **Elegoo** — Canvas / Centauri tags (ELG format)
-- **Anycubic** — ACE / Kobra tags (ACE format)
+| Format | Chip | Read / Write |
+|--------|------|--------------|
+| **Elegoo** | NTAG213/215 | Read & write Canvas / Centauri tags |
+| **Anycubic** | NTAG213 / Ultralight | Read & write ACE / Kobra tags |
+| **OpenSpool** | NTAG215/216 | Read & write open JSON NDEF tags |
+| **OpenTag3D** | NTAG213/215/216 | Read & write open consortium tags |
+| **Creality** | MIFARE Classic 1K | Read & write K2 / K1 / HI CFS tags |
+| **QIDI** | MIFARE Classic 1K | Read & write QIDI Box tags |
+| **Bambu Lab** | MIFARE Classic 1K | Read official AMS tags; optional clone to FUID magic blanks |
 
-More brands can be added as their tag formats are integrated.
+Auto-detect suggests the correct format when you scan an unknown tag. Use the in-app **Tag buying guide** for exact sticker search terms and suppliers.
 
 ## Features
 
 ### Shared
-- Vendor → Type → Subtype filament picker with 80+ vendor catalog
-- Vendor overlay with add, edit, and remove for custom profiles
-- Color picker with RGB sliders, gradient picker, presets, and hex entry (3/4/6/8 digits)
+- Brand / format picker on launch; **Main menu** button on every screen to switch formats
+- Vendor → Type → Subtype filament picker with 80+ vendor catalog (Elegoo / Anycubic)
+- Color picker with RGB sliders, gradient picker, presets, and hex entry
 - Scroll-wheel temperature pickers (5°C steps, 0–400°C)
-
-### Elegoo
-- Manual nozzle and bed temperature ranges
-- Custom filament diameter and production date
-- ELEGOO preset subtypes from the ELG filament database
-
-### Anycubic
-- Material presets with extruder/bed temps from DnG's ACE database
-- ARGB color format and spool length encoding
-- Custom filament profiles per vendor
+- NFC auto-read and tag memory viewer (NTAG formats)
 
 ### App
 - **SpoolTag** — package ID `dngsoftware.spooltag`
-- Brand selection screen on launch; change brand anytime from the drawer
+- Drawer menu for dark mode, format tag, NFC launch settings, and more
 
-## Requirements
+## Tag Requirements
 
-The tags required are [NTAG213](https://www.nxp.com/products/NTAG213_215_216) or [NTAG215](https://www.nxp.com/products/NTAG213_215_216).
+Chip requirements differ by format — see the in-app **Tag buying guide** or the [Releases](https://github.com/sophysdad/ELG-RFID/releases/latest) notes.
 
-The Canvas is programmed to read 45 pages (0 to 44) of the tag to verify filament data. Because this data spans a 144-byte range, you must use a tag that supports at least that many pages. Although Elegoo uses the NTAG213 as standard, the NTAG215 and NTAG216 work perfectly as well since they offer even more storage while maintaining the same page structure.
+NTAG stickers (Elegoo, Anycubic, OpenSpool, OpenTag3D) are not interchangeable with MIFARE Classic stickers (Creality, QIDI, Bambu). Samsung Galaxy S21 and newer phones support MIFARE Classic; some budget phones are NTAG-only.
 
 ## Download
 
@@ -61,54 +59,9 @@ Get the latest APK from the [Releases](https://github.com/sophysdad/ELG-RFID/rel
 
    The release APK will be at `app/build/outputs/apk/release/app-release-unsigned.apk`.
 
-## Original App
+## Tag Format (Elegoo)
 
-The upstream Android app is also available on Google Play:
-
-<a href="https://play.google.com/store/apps/details?id=dngsoftware.elgrfid&hl=en"><img src=https://github.com/DnG-Crafts/ELG-RFID/blob/main/docs/gp.webp width="30%" height="30%"></a>
-
-[![https://www.youtube.com/watch?v=bgkRoVAXhig](https://img.youtube.com/vi/bgkRoVAXhig/0.jpg)](https://www.youtube.com/watch?v=bgkRoVAXhig)
-
-https://www.youtube.com/watch?v=bgkRoVAXhig
-
-## Tag Format
-
-You can view a full tag dump [here](https://github.com/DnG-Crafts/ELG-RFID/blob/main/docs/README.md).
-
-### URI Section
-
-This data is only for smartphone compatibility. It allows a phone to open the Elegoo website when tapped against the spool, but the printer itself does not use this information to identify the filament. The tag does not need this data present on the tag for the printer to read the filament section and identify the filament.
-
-| Page (Dec) | Byte 0 | Byte 1 | Byte 2 | Byte 3 | Field Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **4** | 01 | 03 | A0 | 0C | NDEF Structure |
-| **5** | 34 | 03 | 0F | D1 | 03 NDEF Message; 0F length (15 bytes) |
-| **6** | 01 | 0B | 55 | 04 | 55 Record Type "U" (URI); 04 URI Prefix (https://) |
-| **7** | 65 | 6C | 65 | 67 | ASCII for "**eleg**" |
-| **8** | 6F | 6F | 2E | 63 | ASCII for "**oo.c**" |
-| **9** | 6F | 6D | FE | 00 | ASCII for "**om**"; FE Terminator (TLV) |
-| **10** | 00 | 00 | 00 | 00 | Reserved For URI |
-| **11** | 00 | 00 | 00 | 00 | Reserved For URI |
-| **12** | 00 | 00 | 00 | 00 | Reserved For URI |
-| **13** | 00 | 00 | 00 | 00 | Reserved For URI |
-| **14** | 00 | 00 | 00 | 00 | Reserved For URI |
-| **15** | 00 | 00 | 00 | 00 | Reserved For URI |
-
-### Filament Section
-
-This data is what the printer uses to identify the filament.
-
-| Page (Dec) | Byte 0 | Byte 1 | Byte 2 | Byte 3 | Field Description |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **16** | 36 | EE | EE | EE | Header |
-| **17** | EE | 00 | 00 | 00 | Manufacturer ID |
-| **18** | 00 | 80 | 76 | 65 | Material Type (PLA) |
-| **19** | 00 | 04 | 00 | 00 | Material Position (PLA-CF) |
-| **20** | FF | 37 | 00 | FF | Color Code (#FF3700) |
-| **21** | 00 | D2 | 00 | F0 | Nozzle Temp Min / Max (210 / 240) |
-| **22** | 00 | 00 | 00 | 00 | Bed Temp Min / Max |
-| **23** | 00 | AF | 03 | E8 | Diameter / Weight (175 / 1000) |
-| **24** | 00 | 36 | C8 | 00 | Production Date (YYMM hex) |
+You can view a full Elegoo tag dump [here](docs/README.md).
 
 ## Credits
 

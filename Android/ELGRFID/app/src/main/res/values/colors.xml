@@ -12,5 +12,10 @@
     <color name="background_alt">#FFFFFF</color>
     <color name="brand_elegoo_accent">#1976D2</color>
     <color name="brand_anycubic_accent">#00B4D8</color>
+    <color name="brand_openspool_accent">#7B1FA2</color>
+    <color name="brand_opentag3d_accent">#2E7D32</color>
+    <color name="brand_creality_accent">#E65100</color>
+    <color name="brand_qidi_accent">#1565C0</color>
+    <color name="brand_bambu_accent">#00AE42</color>
 
 </resources>

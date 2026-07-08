@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import dngsoftware.elgrfid.databinding.ActivityMainBinding;
 import dngsoftware.elgrfid.databinding.AddDialogBinding;
 
-public class ElegooController implements FilamentPresetController {
+public class ElegooController implements FilamentPresetController, TagOperations {
 
     private final MainActivity activity;
     private final ActivityMainBinding main;
@@ -67,12 +67,15 @@ public class ElegooController implements FilamentPresetController {
         main.vendor.setVisibility(visible);
         main.vendorborder.setVisibility(visible);
         main.lblvendorMain.setVisibility(visible);
+        main.lblvendorMain.setText(R.string.vendor);
+        main.vendorTapTarget.setVisibility(visible);
         main.type.setVisibility(visible);
         main.typeborder.setVisibility(visible);
         main.lbltype.setVisibility(visible);
         main.subtype.setVisibility(visible);
         main.subtypeborder.setVisibility(visible);
         main.lblsubtype.setVisibility(visible);
+        main.lblsubtype.setText(R.string.subtype);
 
         main.material.setVisibility(gone);
         main.materialborder.setVisibility(gone);

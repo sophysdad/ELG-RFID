@@ -6,6 +6,7 @@ constraintlayoutVersion = "2.1.4"
 flexbox = "3.0.0"
 material = "1.12.0"
 room = "2.6.1"
+bouncycastle = "1.78.1"
 
 [libraries]
 activity-v108 = { module = "androidx.activity:activity", version.ref = "activityVersion" }
@@ -15,6 +16,7 @@ flexbox = { module = "com.google.android.flexbox:flexbox", version.ref = "flexbo
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+bouncycastle = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 
 
 [plugins]

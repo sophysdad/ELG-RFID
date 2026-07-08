@@ -27,5 +27,8 @@ public class BrandSelectionActivity extends AppCompatActivity {
             startActivity(new Intent(this, MainActivity.class));
             finish();
         }));
+
+        binding.tagGuideButton.setOnClickListener(v ->
+                startActivity(new Intent(this, TagGuideActivity.class)));
     }
 }
