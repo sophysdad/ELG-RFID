@@ -4,23 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/brand_selection_background"
+    android:clipChildren="true"
+    android:clipToPadding="true"
     android:fitsSystemWindows="true">
 
-    <TextView
+    <dngsoftware.elgrfid.SpoolTagLogoView
         android:id="@+id/app_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="56dp"
-        android:fontFamily="sans-serif-medium"
-        android:letterSpacing="0.04"
-        android:shadowColor="#80000000"
-        android:shadowDx="0"
-        android:shadowDy="2"
-        android:shadowRadius="6"
-        android:text="@string/app_name"
-        android:textColor="@color/text_inverted"
-        android:textSize="42sp"
-        android:textStyle="bold"
+        android:layout_marginTop="52dp"
+        android:layout_marginBottom="14dp"
+        android:contentDescription="@string/app_name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -30,7 +24,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="32dp"
         android:gravity="center"
         android:shadowColor="#80000000"
@@ -49,8 +43,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="28dp"
         android:layout_marginEnd="28dp"
+        android:layout_marginBottom="0dp"
         android:gravity="center"
         android:shadowColor="#80000000"
         android:shadowDx="0"
@@ -64,27 +59,43 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_tagline" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/brand_list"
+    <FrameLayout
+        android:id="@+id/brand_list_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="12dp"
-        android:clipToPadding="false"
-        android:paddingBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="0dp"
+        android:clipChildren="true"
+        android:clipToPadding="true"
         app:layout_constraintBottom_toTopOf="@+id/tag_guide_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/brand_prompt" />
+        app:layout_constraintTop_toBottomOf="@+id/brand_prompt">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/brand_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:clipToPadding="true"
+            android:overScrollMode="ifContentScrolls"
+            android:paddingStart="8dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="4dp"
+            android:scrollbars="vertical" />
+
+    </FrameLayout>
 
     <Button
         android:id="@+id/tag_guide_button"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="28dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="20dp"
         android:drawableStart="@drawable/twotone_help_24"
         android:drawablePadding="8dp"
         android:drawableTint="@color/text_inverted"
@@ -94,6 +105,7 @@
         android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/brand_list_container" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

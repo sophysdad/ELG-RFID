@@ -10,4 +10,8 @@
     <color name="switch_thumb">#FAFAFA</color>
     <color name="background_main">#2C2C2C</color>
     <color name="background_alt">#383838</color>
+    <color name="brand_card_background">#80383838</color>
+
+    <color name="brand_card_text_alt">#7A848E</color>
+    <color name="brand_title_icon">#F0F7FF</color>
 </resources>

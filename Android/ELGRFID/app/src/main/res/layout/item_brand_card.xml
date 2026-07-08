@@ -7,15 +7,16 @@
     android:layout_marginBottom="14dp"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="@color/background_alt"
+    app:cardBackgroundColor="@android:color/transparent"
     app:cardCornerRadius="16dp"
-    app:cardElevation="6dp"
+    app:cardElevation="0dp"
     app:rippleColor="@color/primary_variant"
     app:strokeWidth="2dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/brand_card_fill"
         android:minHeight="88dp"
         android:paddingStart="0dp"
         android:paddingTop="16dp"
@@ -49,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="18dp"
             android:layout_marginTop="6dp"
-            android:textColor="@color/text_alt"
+            android:textColor="@color/brand_card_text_alt"
             android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/brand_accent"

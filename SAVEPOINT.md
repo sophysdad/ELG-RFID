@@ -1,6 +1,6 @@
 # SpoolTag — Savepoint (2026-07-08)
 
-Resume from here. Last session shipped **v2.1 beta** and renamed the GitHub repo to **SpoolTag**.
+Resume from here. **v2.1 beta** is on GitHub; this session polished the **brand selection (launch) screen** UI.
 
 ## Quick resume
 
@@ -8,43 +8,46 @@ Resume from here. Last session shipped **v2.1 beta** and renamed the GitHub repo
 |------|-------|
 | **GitHub** | https://github.com/sophysdad/SpoolTag |
 | **Latest release** | [v2.1 (Beta)](https://github.com/sophysdad/SpoolTag/releases/tag/v2.1) — APK attached |
-| **Local repo path** | `C:\Users\sophy\Desktop\Elegoo-RFID\ELG-RFID` *(rename pending — see below)* |
-| **Android project** | `Android/ELGRFID/` |
+| **Local repo path** | `C:\Users\sophy\Desktop\Elegoo-RFID\SpoolTag` |
+| **Android Studio project** | `Android/ELGRFID/` *(open this folder, not repo root)* |
 | **Package ID** | `dngsoftware.spooltag` |
 | **App version** | `2.1` / `versionCode 5` |
-| **Git branch** | `main` @ `1c4b496` |
+| **Git branch** | `main` *(see Recent commits for HEAD)* |
 | **Git remote** | `https://github.com/sophysdad/SpoolTag.git` |
 
-## Build
+## Build & run
 
 ```powershell
 cd Android\ELGRFID
-.\gradlew.bat assembleRelease
-# APK: app\build\outputs\apk\release\app-release-unsigned.apk
+.\gradlew.bat assembleDebug    # dev / Android Studio Run
+.\gradlew.bat assembleRelease  # release APK
 ```
 
 Requires `Android/ELGRFID/local.properties` with `sdk.dir=...`.
 
-## What’s done (v2.1)
+**Phone:** enable USB debugging, open `Android/ELGRFID` in Android Studio, Run ▶ on device.
 
+## What’s done (v2.1 + launch-screen polish)
+
+### v2.1 (shipped)
 - **Formats:** Elegoo, Anycubic, OpenSpool, OpenTag3D, Creality, QIDI, Bambu Lab
-- **UI fixes:** Main-screen vs drawer actions, Bambu read/clone bar, Creality spinner overlap, Creality crash guards (spinner -1, mutable adapters, Room on executor)
-- **Navigation:** Main menu button on every screen → format picker
-- **Tag buying guide** in-app
-- **Auto-detect** unknown tag format
-- **Released:** tag `v2.1`, prerelease on GitHub, `SpoolTag-v2.1.apk` uploaded
-- **Repo rename:** GitHub `ELG-RFID` → `SpoolTag`; local remote + README/release-notes links updated
+- **Navigation:** Main menu on every screen → format picker
+- **Tag buying guide**, auto-detect, Creality crash guards
+- **Released:** tag `v2.1`, prerelease on GitHub, release issues link fixed
+
+### Launch screen UI (this session)
+- **`SpoolTagLogoView`** — custom wordmark: Syne ExtraBold, gradient text, NFC waves integrated in “oo”, halo/glow
+- **Frosted brand cards** — 50% transparent fill (`brand_card_fill.xml`), darker description text
+- **Clipped scroll panel** — `brand_list_container` between instructions and help link; cards never overlap header/footer (panel is invisible, clipping only)
+- **Layout tuning** — margins sized so Elegoo + Anycubic + OpenSpool fit on load on S23
+
+### Housekeeping
+- Local folder renamed `ELG-RFID` → `SpoolTag`
+- GitHub release v2.1 issues URL → `SpoolTag/issues`
+- `.gitignore` excludes `mcps/`, `terminals/`
+- Removed unused `outfit_semibold.ttf` font
 
 ## Pending / next session
-
-### Immediate housekeeping
-1. **Rename local folder** (blocked while Cursor has it open):
-   ```powershell
-   Rename-Item "C:\Users\sophy\Desktop\Elegoo-RFID\ELG-RFID" "SpoolTag"
-   ```
-   Then reopen workspace from `...\Elegoo-RFID\SpoolTag`.
-
-2. **Optional:** Edit GitHub release v2.1 description — issues link still says `ELG-RFID` (redirects work; repo docs are already fixed).
 
 ### Testing (S23 checklist)
 - [ ] All 7 brands / formats
@@ -54,35 +57,38 @@ Requires `Android/ELGRFID/local.properties` with `sdk.dir=...`.
 - [ ] Creality printer model switch
 - [ ] Main menu navigation
 - [ ] Tag buying guide links
+- [ ] Launch screen scroll + logo on various screen sizes
 
-### Future work (not started)
+### Future work
 - **OpenPrintTag** (NfcV) — Phase 4
 - Signed APK / Play Store listing
-- Formal GitHub issue template for beta feedback
-- Internal rename `dngsoftware.elgrfid` / `Android/ELGRFID` — cosmetic only, low priority
+- Beta feedback issue template
+- Optional **v2.1.1** polish APK if UI-only changes warrant a tagged build
+- Internal rename `dngsoftware.elgrfid` / `Android/ELGRFID` — cosmetic, low priority
 
-## Key architecture notes
+## Key files (launch screen)
+
+| File | Role |
+|------|------|
+| `SpoolTagLogoView.java` | Custom logo draw (text + NFC mark) |
+| `activity_brand_selection.xml` | Header, clipped `brand_list_container`, help button |
+| `item_brand_card.xml` | Frosted format cards |
+| `brand_card_fill.xml` | Semi-transparent card background |
+| `contactless_logo_mark.xml` | Full-opacity NFC icon for logo |
+| `res/font/syne_extrabold.ttf` | Logo typeface |
+
+## Architecture (unchanged)
 
 - **Brand picker:** `BrandSelectionActivity` → `MainActivity` with `PrinterBrand`
 - **Shared nav:** `BrandNavigation.openMainMenu()`
-- **NTAG formats:** `NdefFilamentController`, codecs per brand
-- **MIFARE formats:** `MifareClassicTransport`, Creality/QIDI/Bambu controllers
-- **Creality data:** bundled JSON in `res/raw/`
-- **Bambu:** read-only official tags; clone to FUID/Gen2 magic blanks
-
-## Recent commits
-
-```
-1c4b496 Update repo links for SpoolTag rename
-b9bd950 SpoolTag v2.1 beta: five new tag formats, buying guide, main menu nav
-fb8e7b7 Polish SpoolTag v2.0 UI and filament picker for public release
-```
+- **NTAG:** `NdefFilamentController` + per-brand codecs
+- **MIFARE:** `MifareClassicTransport`, Creality/QIDI/Bambu controllers
 
 ## Workspace layout (Desktop)
 
 ```
-Elegoo-RFID/          ← Cursor workspace root (name unchanged)
-  ELG-RFID/           ← git repo (rename to SpoolTag when convenient)
-  ACE-RFID/           ← reference fork, not part of SpoolTag repo
-  mcps/, terminals/   ← tooling (not in git)
+Elegoo-RFID/
+  SpoolTag/           ← git repo + Cursor workspace
+  ACE-RFID/           ← reference fork, not in SpoolTag repo
+  mcps/, terminals/   ← local tooling (gitignored)
 ```

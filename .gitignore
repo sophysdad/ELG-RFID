@@ -20,6 +20,10 @@ local.properties
 .DS_Store
 Thumbs.db
 
+# Local tooling (not part of app)
+mcps/
+terminals/
+
 # Signing keys
 *.jks
 *.keystore
