@@ -12,7 +12,7 @@ Resume from here. **v2.1 beta** is on GitHub; this session polished the **brand 
 | **Android Studio project** | `Android/ELGRFID/` *(open this folder, not repo root)* |
 | **Package ID** | `dngsoftware.spooltag` |
 | **App version** | `2.1` / `versionCode 5` |
-| **Git branch** | `main` *(see Recent commits for HEAD)* |
+| **Git branch** | `main` (synced with `origin/main`) |
 | **Git remote** | `https://github.com/sophysdad/SpoolTag.git` |
 
 ## Build & run
@@ -83,6 +83,16 @@ Requires `Android/ELGRFID/local.properties` with `sdk.dir=...`.
 - **Shared nav:** `BrandNavigation.openMainMenu()`
 - **NTAG:** `NdefFilamentController` + per-brand codecs
 - **MIFARE:** `MifareClassicTransport`, Creality/QIDI/Bambu controllers
+
+## Recent commits
+
+```
+d2c35af Update savepoint for launch screen polish session
+801e584 Polish brand selection launch screen UI
+934ba0a Add savepoint for v2.1 beta session
+1c4b496 Update repo links for SpoolTag rename
+b9bd950 SpoolTag v2.1 beta: five new tag formats, buying guide, main menu nav
+```
 
 ## Workspace layout (Desktop)
 
