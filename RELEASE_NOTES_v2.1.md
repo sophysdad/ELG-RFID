@@ -22,7 +22,7 @@
 
 ## Feedback requested
 
-Please open a [GitHub issue](https://github.com/sophysdad/ELG-RFID/issues) and report:
+Please open a [GitHub issue](https://github.com/sophysdad/SpoolTag/issues) and report:
 
 1. Phone model (NFC / MIFARE Classic support matters)
 2. Format tested (OpenSpool, OpenTag3D, Creality, QIDI, Bambu, etc.)

@@ -33,13 +33,13 @@ Auto-detect suggests the correct format when you scan an unknown tag. Use the in
 
 ## Tag Requirements
 
-Chip requirements differ by format — see the in-app **Tag buying guide** or the [Releases](https://github.com/sophysdad/ELG-RFID/releases/latest) notes.
+Chip requirements differ by format — see the in-app **Tag buying guide** or the [Releases](https://github.com/sophysdad/SpoolTag/releases/latest) notes.
 
 NTAG stickers (Elegoo, Anycubic, OpenSpool, OpenTag3D) are not interchangeable with MIFARE Classic stickers (Creality, QIDI, Bambu). Samsung Galaxy S21 and newer phones support MIFARE Classic; some budget phones are NTAG-only.
 
 ## Download
 
-Get the latest APK from the [Releases](https://github.com/sophysdad/ELG-RFID/releases/latest) page.
+Get the latest APK from the [Releases](https://github.com/sophysdad/SpoolTag/releases/latest) page.
 
 ## Building the App
 
